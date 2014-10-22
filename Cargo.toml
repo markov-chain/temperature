@@ -1,0 +1,14 @@
+[package]
+name = "temper"
+version = "0.0.1"
+authors = ["Ivan Ukhov <ivan.ukhov@gmail.com>"]
+
+[lib]
+name = "temper"
+doctest = false
+
+[dependencies.hotspot]
+git = "https://github.com/rs-eslab/hotspot"
+
+[dependencies.matrix]
+git = "https://github.com/rs-math/matrix"
