@@ -60,7 +60,7 @@
 //!   = U * diag((exp(λi * Δt) - 1) / λi) * U^T * B.
 //! ```
 
-#![feature(macro_rules)]
+#![feature(phase)]
 
 extern crate serialize;
 

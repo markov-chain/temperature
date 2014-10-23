@@ -12,3 +12,6 @@ git = "https://github.com/rs-eslab/hotspot"
 
 [dependencies.matrix]
 git = "https://github.com/rs-math/matrix"
+
+[dev-dependencies.assert]
+git = "https://github.com/rs-math/assert"

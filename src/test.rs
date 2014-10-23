@@ -1,20 +1,8 @@
+#[phase(plugin)] extern crate assert;
+
 use std::io::fs::PathExtensions;
 
 use super::Analysis;
-
-macro_rules! absolute(
-    ($slice:expr) => (
-        $slice.iter().map(|&x| ::std::num::abs(x)).collect::<Vec<_>>()
-    );
-)
-
-macro_rules! assert_close(
-    ($left:expr, $right:expr) => ({
-        for (&x, &y) in $left.iter().zip($right.iter()) {
-            assert!(::std::num::abs(x - y) < 1e-8);
-        }
-    });
-)
 
 #[test]
 fn new() {
@@ -24,7 +12,7 @@ fn new() {
     assert_eq!(system.nc, 2);
     assert_eq!(system.nn, 4 * 2 + 12);
     assert_close!(system.D, fixture::D);
-    assert_close!(absolute!(system.U), absolute!(fixture::U));
+    assert_abs_close!(system.U, fixture::U);
     assert_close!(system.L, fixture::L);
     assert_close!(system.E, fixture::E);
     assert_close!(system.F, fixture::F);
@@ -1144,4 +1132,4 @@ mod fixture {
                                   3.344082413390081e+02, 3.278605554160728e+02,
                                   3.344075343852903e+02, 3.278647179354933e+02,
                                   3.343293345941553e+02, 3.224487606241598e+02];
-    }
+}
