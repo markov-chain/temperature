@@ -1,5 +1,5 @@
 /// A configuration of the HotSpot model.
-#[deriving(Decodable, Encodable)]
+#[deriving(Decodable)]
 pub struct HotSpot {
     /// The floorplan file of the platform to analyze.
     pub floorplan: String,
@@ -10,7 +10,7 @@ pub struct HotSpot {
 }
 
 /// A configuration of the analysis.
-#[deriving(Decodable, Encodable)]
+#[deriving(Decodable)]
 pub struct Config {
     /// The configuration of the HotSpot model.
     pub hotspot: HotSpot,
