@@ -7,8 +7,8 @@
 //!
 //! ```math
 //!     dQex
-//! C * --- + G * (Qex - Qamb) = M * P
-//!     dt
+//! C * ---- + G * (Qex - Qamb) = M * P
+//!      dt
 //!
 //! Q = M^T * Qex
 //! ```
@@ -67,29 +67,55 @@ extern crate serialize;
 extern crate hotspot;
 extern crate matrix;
 
-pub use config::Config;
+#[cfg(test)] mod test;
 
-mod config;
-
-#[cfg(test)]
-mod test;
-
-#[allow(non_snake_case)]
-#[allow(dead_code)]
-struct System {
-    nc: uint,
-    nn: uint,
-    D: Vec<f64>,
-    U: Vec<f64>,
-    L: Vec<f64>,
-    E: Vec<f64>,
-    F: Vec<f64>,
+/// Temperature analysis.
+pub struct Analysis {
+    /// The configuration of the analysis.
+    pub config: Config,
+    /// The thermal system that the analysis is based on.
+    pub system: System,
 }
 
-#[allow(dead_code)]
-pub struct Analysis {
-    config: Config,
-    system: System,
+/// A configuration of the analysis.
+#[deriving(Decodable)]
+pub struct Config {
+    /// The configuration of the HotSpot model.
+    pub hotspot: HotSpot,
+    /// The sampling interval in seconds. It is the time between two successive
+    /// samples of power or temperature in power or temperature profiles,
+    /// respectively. In the formulas given in the general description of the
+    /// library, it is referred to as `Δt`.
+    pub time_step: f64,
+    /// The temperature of the ambience in Kelvin.
+    pub ambience: f64,
+}
+
+/// A configuration of the HotSpot model.
+#[deriving(Decodable)]
+pub struct HotSpot {
+    /// The floorplan file of the platform to analyze.
+    pub floorplan: String,
+    /// A configuration file of HotSpot (`hotspot.config`).
+    pub config: String,
+    /// A line of parameters overwriting the parameters in the above file.
+    pub params: String,
+}
+
+/// A model of heat transfer in an electronic system.
+#[allow(non_snake_case)]
+pub struct System {
+    /// The number of active thermal nodes (processing elements).
+    pub cores: uint,
+    /// The number of thermal nodes.
+    pub nodes: uint,
+
+    #[allow(dead_code)] U: Vec<f64>,
+    #[allow(dead_code)] L: Vec<f64>,
+
+    D: Vec<f64>,
+    E: Vec<f64>,
+    F: Vec<f64>,
 }
 
 impl Analysis {
@@ -97,7 +123,9 @@ impl Analysis {
     #[allow(non_snake_case)]
     pub fn new(config: Config) -> Result<Analysis, String> {
         use hotspot::Circuit;
-        use matrix::{multiply, sym_eig};
+        use matrix::multiply;
+        use matrix::decomp::sym_eig;
+        use std::mem::{forget, transmute_copy};
 
         let circuit = match Circuit::new(config.hotspot.floorplan.as_slice(),
                                          config.hotspot.config.as_slice(),
@@ -108,7 +136,7 @@ impl Analysis {
 
         let (nc, nn) = (circuit.cores, circuit.nodes);
 
-        // NOTE: Reusing the memory.
+        // Reusing the memory allocated in `circuit`.
         let mut A = circuit.conductance;
         let mut D = circuit.capacitance;
 
@@ -121,13 +149,18 @@ impl Analysis {
             }
         }
 
-        // NOTE: Reusing the memory.
-        let mut U: Vec<f64> = unsafe { ::std::mem::transmute_copy(&A) };
+        // Reusing `A` to store `U` as `sym_eig` allows for this.
+        let mut U: Vec<f64> = unsafe { transmute_copy(&A) };
         let mut L = Vec::from_elem(nn, 0.0);
 
-        match sym_eig(A.as_ptr(), U.as_mut_ptr(), L.as_mut_ptr(), nn) {
-            Err(_) => return Err("cannot perform the eigendecomposition".to_string()),
-            _ => {},
+        if sym_eig(A.as_slice(), U.as_mut_slice(), L.as_mut_slice(), nn).is_err() {
+            return Err("cannot perform the eigendecomposition".to_string());
+        }
+
+        unsafe {
+            // `A` is no longer needed, and `U` is to be moved out. Both,
+            // however, point at the same chunk of memory. So, forget `A`!
+            forget(A);
         }
 
         let dt = config.time_step;
@@ -145,9 +178,9 @@ impl Analysis {
         }
 
         let mut E = Vec::from_elem(nn * nn, 0.0);
-        multiply(U.as_ptr(), temp.as_ptr(), E.as_mut_ptr(), nn, nn, nn);
+        multiply(U.as_slice(), temp.as_slice(), E.as_mut_slice(), nn, nn, nn);
 
-        // Technically, temp = temp.slice(0, nn * nc).
+        // At this point, only `nn * nc` elements of `temp` are utilized.
         for i in range(0u, nn) {
             coef[i] = (coef[i] - 1.0) / L[i];
         }
@@ -158,11 +191,19 @@ impl Analysis {
         }
 
         let mut F = Vec::from_elem(nn * nc, 0.0);
-        multiply(U.as_ptr(), temp.as_ptr(), F.as_mut_ptr(), nn, nn, nc);
+        multiply(U.as_slice(), temp.as_slice(), F.as_mut_slice(), nn, nn, nc);
 
         Ok(Analysis {
             config: config,
-            system: System { nc: nc, nn: nn, D: D, L: L, U: U, E: E, F: F },
+            system: System {
+                cores: nc,
+                nodes: nn,
+                L: L,
+                U: U,
+                D: D,
+                E: E,
+                F: F,
+            },
         })
     }
 
@@ -170,5 +211,62 @@ impl Analysis {
     #[inline]
     pub fn load(path: Path) -> Result<Analysis, String> {
         Analysis::new(try!(Config::load(path)))
+    }
+
+    /// Performs transient temperature analysis.
+    ///
+    /// `P` is an input power profile given as an `nc`-by-`ns` matrix where `nc`
+    /// is the number of cores, and `ns` is the number of time steps; see
+    /// `time_step` in `Config`. `Q` is the corresponding output temperature
+    /// profile, which is given as an `nc`-by-`ns` matrix. `S` is an optional
+    /// `nn`-by-`ns` matrix, where `nn` is the number of thermal nodes, for the
+    /// internal usage of the function to prevent repetitive memory allocation
+    /// if the analysis is to be performed several times.
+    #[allow(non_snake_case)]
+    pub fn compute_transient(&self, P: &[f64], Q: &mut [f64], S: &mut [f64], ns: uint) {
+        use matrix::{multiply, multiply_add};
+        use std::mem::transmute_copy;
+
+        let (nc, nn) = (self.system.cores, self.system.nodes);
+
+        let D = self.system.D.as_slice();
+        let E = self.system.E.as_slice();
+        let F = self.system.F.as_slice();
+
+        multiply(F, P, S, nn, nc, ns);
+
+        // In the loop below, we need to perform operations on certain slices
+        // of `S` and overwrite them with new data. `multiply_add` allows the
+        // third and fourth arguments (one of the inputs and the only output,
+        // respectively) to overlap. So, let us be more efficient.
+        let Z: &mut [f64] = unsafe { transmute_copy(&S) };
+
+        for i in range(1u, ns) {
+            let (j, k) = ((i - 1) * nn, i * nn);
+            multiply_add(E, S.slice(j, k), S.slice(k, k + nn), Z.slice_mut(k, k + nn), nn, nn, 1);
+        }
+
+        for i in range(0u, nc) {
+            for j in range(0u, ns) {
+                Q[nc * j + i] = D[i] * S[nn * j + i] + self.config.ambience;
+            }
+        }
+    }
+}
+
+impl Config {
+    /// Reads a configuration structure from a JSON file.
+    pub fn load(path: Path) -> Result<Config, String> {
+        use serialize::json;
+        use std::io::File;
+
+        let content = match File::open(&path).read_to_string() {
+            Ok(content) => content,
+            Err(error) => return Err(error.to_string()),
+        };
+        match json::decode(content.as_slice()) {
+            Ok(config) => Ok(config),
+            Err(error) => Err(error.to_string()),
+        }
     }
 }
