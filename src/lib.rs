@@ -2,7 +2,6 @@
 //!
 //! The library provides an exponential-integrator-based solver for systems of
 //! differential-algebraic equations modeling temperature of electronic systems.
-//!
 //! The initial thermal system is
 //!
 //! ```math
@@ -121,18 +120,15 @@ pub struct System {
 impl Analysis {
     /// Sets up the anlysis set up according to the given configuration.
     #[allow(non_snake_case)]
-    pub fn new(config: Config) -> Result<Analysis, String> {
+    pub fn new(config: Config) -> Result<Analysis, &'static str> {
         use hotspot::Circuit;
         use matrix::multiply;
         use matrix::decomp::sym_eig;
         use std::mem::{forget, transmute_copy};
 
-        let circuit = match Circuit::new(config.hotspot.floorplan.as_slice(),
-                                         config.hotspot.config.as_slice(),
-                                         config.hotspot.params.as_slice()) {
-            Ok(circuit) => circuit,
-            Err(_) => return Err("cannot construct a thermal circuit".to_string()),
-        };
+        let circuit = try!(Circuit::new(config.hotspot.floorplan.as_slice(),
+                                        config.hotspot.config.as_slice(),
+                                        config.hotspot.params.as_slice()));
 
         let (nc, nn) = (circuit.cores, circuit.nodes);
 
@@ -154,7 +150,7 @@ impl Analysis {
         let mut L = Vec::from_elem(nn, 0.0);
 
         if sym_eig(A.as_slice(), U.as_mut_slice(), L.as_mut_slice(), nn).is_err() {
-            return Err("cannot perform the eigendecomposition".to_string());
+            return Err("cannot perform the eigendecomposition");
         }
 
         unsafe {
@@ -209,7 +205,7 @@ impl Analysis {
 
     /// Sets up the analysis according to the given configuration file.
     #[inline]
-    pub fn load(path: Path) -> Result<Analysis, String> {
+    pub fn load(path: Path) -> Result<Analysis, &'static str> {
         Analysis::new(try!(Config::load(path)))
     }
 
@@ -256,17 +252,17 @@ impl Analysis {
 
 impl Config {
     /// Reads a configuration structure from a JSON file.
-    pub fn load(path: Path) -> Result<Config, String> {
+    pub fn load(path: Path) -> Result<Config, &'static str> {
         use serialize::json;
         use std::io::File;
 
         let content = match File::open(&path).read_to_string() {
             Ok(content) => content,
-            Err(error) => return Err(error.to_string()),
+            Err(error) => return Err(error.desc),
         };
         match json::decode(content.as_slice()) {
             Ok(config) => Ok(config),
-            Err(error) => Err(error.to_string()),
+            Err(_) => Err("cannot parse the input file"),
         }
     }
 }
