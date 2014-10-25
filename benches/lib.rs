@@ -24,7 +24,7 @@ fn compute_transient(bench: &mut test::Bencher) {
 
 fn find_fixture(name: &str) -> Path {
     use std::io::fs::PathExtensions;
-    let path = Path::new("fixtures").join(name);
+    let path = Path::new("tests").join_many(["fixtures", name]);
     assert!(path.exists());
     path
 }
