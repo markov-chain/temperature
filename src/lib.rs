@@ -118,7 +118,7 @@ pub struct System {
 }
 
 impl Analysis {
-    /// Sets up the anlysis set up according to the given configuration.
+    /// Sets up the analysis set up according to the given configuration.
     #[allow(non_snake_case)]
     pub fn new(config: Config) -> Result<Analysis, &'static str> {
         use hotspot::Circuit;
@@ -214,7 +214,7 @@ impl Analysis {
     /// `P` is an input power profile given as an `nc`-by-`ns` matrix where `nc`
     /// is the number of cores, and `ns` is the number of time steps; see
     /// `time_step` in `Config`. `Q` is the corresponding output temperature
-    /// profile, which is given as an `nc`-by-`ns` matrix. `S` is an optional
+    /// profile, which is given as an `nc`-by-`ns` matrix. `S` is an
     /// `nn`-by-`ns` matrix, where `nn` is the number of thermal nodes, for the
     /// internal usage of the function to prevent repetitive memory allocation
     /// if the analysis is to be performed several times.
