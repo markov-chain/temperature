@@ -2,12 +2,12 @@ extern crate test;
 
 extern crate temper;
 
+use temper::Analysis;
+
 #[bench]
 #[allow(non_snake_case)]
 fn compute_transient(bench: &mut test::Bencher) {
-    use temper::Analysis;
-
-    let analysis = Analysis::load(find_fixture("032.json")).unwrap();
+    let analysis = load_fixture("032");
 
     let nc = 32;
     let ns = 1000;
@@ -20,6 +20,16 @@ fn compute_transient(bench: &mut test::Bencher) {
     bench.iter(|| {
         analysis.compute_transient(P.as_slice(), Q.as_mut_slice(), S.as_mut_slice(), ns);
     });
+}
+
+fn load_fixture(name: &str) -> Analysis {
+    use std::default::Default;
+    use temper::model::hotspot::new;
+
+    let circuit = new(&find_fixture(format!("{}.flp", name).as_slice()),
+                      &find_fixture("hotspot.config"), "").unwrap();
+
+    Analysis::new(circuit, Default::default()).unwrap()
 }
 
 fn find_fixture(name: &str) -> Path {

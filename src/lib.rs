@@ -1,25 +1,46 @@
 //! Temperature analysis of electronic systems.
 //!
-//! The library provides an exponential-integrator-based solver for systems of
-//! differential-algebraic equations modeling temperature of electronic systems.
-//! The initial thermal system is
+//! ## Model
+//!
+//! Temperature analysis is based on the well-known analogy between electrical
+//! and thermal circuits. For an electronic system of interest, an equivalent
+//! thermal RC circuit is constructed. The circuit is composed of `nodes`
+//! thermal nodes. A subset of `cores` (out of `nodes`) thermal nodes
+//! corresponds to the power-dissipating elements of the electronic system and
+//! is referred to as active.
+//!
+//! The thermal behavior of the electronic system is modeled using the following
+//! system of differential-algebraic equations:
 //!
 //! ```math
-//!     dQex
-//! C * ---- + G * (Qex - Qamb) = M * P
+//!     dQall
+//! C * ----- + G * (Qall - Qamb) = M * P
 //!      dt
 //!
-//! Q = M^T * Qex
+//! Q = M^T * Qall
 //! ```
 //!
-//! where `C` and `G` are the thermal capacitance and conductance matrices,
-//! respectively; `Qex` and `Q` are the temperature vectors of all thermal nodes
-//! and those that correspond to the processing elements, respectively; `Qamb`
-//! is the ambient temperature; `P` is the power vector of the processing
-//! elements; and `M` is a rectangular diagonal matrix whose diagonal elements
-//! equal to unity.
+//! where
 //!
-//! The transformed system is
+//! * `C` is an `nodes`-by-`nodes` diagonal matrix of thermal capacitance;
+//!
+//! * `G` is an `nodes`-by-`nodes` symmetric, positive-definite matrix of
+//!   thermal conductance;
+//!
+//! * `Qall` is an `nodes`-element temperature vector of all thermal nodes;
+//!
+//! * `Q` is a `cores`-element temperature vector of the active thermal nodes;
+//!
+//! * `Qamb` is a `cores`-element temperature vector of the ambience;
+//!
+//! * `P` is a `cores`-element power vector of the active thermal nodes; and
+//!
+//! * `M` is an `nodes`-by-`cores` rectangular diagonal matrix whose diagonal
+//!   elements equal to unity.
+//!
+//! ## Solution
+//!
+//! The original thermal system is transformed as follows:
 //!
 //! ```math
 //! dS
@@ -32,7 +53,7 @@
 //! where
 //!
 //! ```math
-//! S = D^(-1) * (Qex - Qamb),
+//! S = D^(-1) * (Qall - Qamb),
 //! A = -D * G * D,
 //! B = D * M, and
 //! D = C^(-1/2).
@@ -45,7 +66,7 @@
 //! ```
 //!
 //! The solution of the system for a short time interval `[0, Δt]` is based on
-//! the following recurrence:
+//! the following equation:
 //!
 //! ```math
 //! S(t) = E * S(0) + F * P(0)
@@ -58,111 +79,88 @@
 //! F = A^(-1) * (exp(A * Δt) - I) * B
 //!   = U * diag((exp(λi * Δt) - 1) / λi) * U^T * B.
 //! ```
+//!
+//! `Δt` is referred to as the time step. In order to find the temperature
+//! profile corresponding to the whole time span of interest, the time span is
+//! split into small intervals, and the above equation is successively applied
+//! to each of these small intervals.
 
 #![feature(phase)]
 
-extern crate serialize;
-
-extern crate hotspot;
 extern crate matrix;
+
+pub mod model;
 
 #[cfg(test)] mod test;
 
 /// Temperature analysis.
 pub struct Analysis {
-    /// The configuration of the analysis.
-    pub config: Config,
-    /// The thermal system that the analysis is based on.
-    pub system: System,
+    config: Config,
+    system: System,
 }
 
-/// A configuration of the analysis.
-#[deriving(Decodable)]
+/// A thermal RC circuit.
+pub struct Circuit {
+    /// The number of active thermal nodes.
+    pub cores: uint,
+    /// The number of all thermal nodes.
+    pub nodes: uint,
+    /// An `nodes`-element vector of thermal capacitance.
+    pub capacitance: Vec<f64>,
+    /// An `nodes`-by-`nodes` matrix of thermal conductance.
+    pub conductance: Vec<f64>,
+}
+
+/// A configuration of temperature analysis.
 pub struct Config {
-    /// The configuration of the HotSpot model.
-    pub hotspot: HotSpot,
-    /// The sampling interval in seconds. It is the time between two successive
-    /// samples of power or temperature in power or temperature profiles,
-    /// respectively. In the formulas given in the general description of the
-    /// library, it is referred to as `Δt`.
+    /// The sampling interval of power and temperature profiles in seconds.
     pub time_step: f64,
     /// The temperature of the ambience in Kelvin.
     pub ambience: f64,
 }
 
-/// A configuration of the HotSpot model.
-#[deriving(Decodable)]
-pub struct HotSpot {
-    /// The floorplan file of the platform to analyze.
-    pub floorplan: String,
-    /// A configuration file of HotSpot (`hotspot.config`).
-    pub config: String,
-    /// A line of parameters overwriting the parameters in the above file.
-    pub params: String,
-}
-
-/// A model of heat transfer in an electronic system.
 #[allow(non_snake_case)]
-pub struct System {
-    /// The number of active thermal nodes (processing elements).
-    pub cores: uint,
-    /// The number of thermal nodes.
-    pub nodes: uint,
-
+struct System {
+    cores: uint,
+    nodes: uint,
     #[allow(dead_code)] U: Vec<f64>,
     #[allow(dead_code)] L: Vec<f64>,
-
     D: Vec<f64>,
     E: Vec<f64>,
     F: Vec<f64>,
 }
 
 impl Analysis {
-    /// Sets up the analysis set up according to the given configuration.
+    /// Set up the analysis for a particular problem.
     #[allow(non_snake_case)]
-    pub fn new(config: Config) -> Result<Analysis, &'static str> {
-        use hotspot::Circuit;
+    pub fn new(circuit: Circuit, config: Config) -> Result<Analysis, &'static str> {
         use matrix::multiply;
         use matrix::decomp::sym_eig;
-        use std::mem::{forget, transmute_copy};
-
-        let circuit = try!(Circuit::new(config.hotspot.floorplan.as_slice(),
-                                        config.hotspot.config.as_slice(),
-                                        config.hotspot.params.as_slice()));
 
         let (nc, nn) = (circuit.cores, circuit.nodes);
 
-        // Reusing the memory allocated in `circuit`.
-        let mut A = circuit.conductance;
-        let mut D = circuit.capacitance;
-
+        let mut D = circuit.capacitance; // recycle
         for i in range(0u, nn) {
             D[i] = (1.0 / D[i]).sqrt();
         }
+
+        let mut A = circuit.conductance; // recycle
         for i in range(0u, nn) {
             for j in range(0u, nn) {
                 A[j * nn + i] = -1.0 * D[i] * D[j] * A[j * nn + i];
             }
         }
 
-        // Reusing `A` to store `U` as `sym_eig` allows for this.
-        let mut U: Vec<f64> = unsafe { transmute_copy(&A) };
+        let mut U = Vec::from_elem(nn * nn, 0.0);
         let mut L = Vec::from_elem(nn, 0.0);
-
         if sym_eig(A.as_slice(), U.as_mut_slice(), L.as_mut_slice(), nn).is_err() {
             return Err("cannot perform the eigendecomposition");
-        }
-
-        unsafe {
-            // `A` is no longer needed, and `U` is to be moved out. Both,
-            // however, point at the same chunk of memory. So, forget `A`!
-            forget(A);
         }
 
         let dt = config.time_step;
 
         let mut coef = Vec::from_elem(nn, 0.0);
-        let mut temp = Vec::from_elem(nn * nn, 0.0);
+        let mut temp = A; // recycle
 
         for i in range(0u, nn) {
             coef[i] = (dt * L[i]).exp();
@@ -176,7 +174,6 @@ impl Analysis {
         let mut E = Vec::from_elem(nn * nn, 0.0);
         multiply(U.as_slice(), temp.as_slice(), E.as_mut_slice(), nn, nn, nn);
 
-        // At this point, only `nn * nc` elements of `temp` are utilized.
         for i in range(0u, nn) {
             coef[i] = (coef[i] - 1.0) / L[i];
         }
@@ -203,23 +200,23 @@ impl Analysis {
         })
     }
 
-    /// Sets up the analysis according to the given configuration file.
-    #[inline]
-    pub fn load(path: Path) -> Result<Analysis, &'static str> {
-        Analysis::new(try!(Config::load(path)))
-    }
-
-    /// Performs transient temperature analysis.
+    /// Perform transient temperature analysis.
     ///
-    /// `P` is an input power profile given as an `nc`-by-`ns` matrix where `nc`
-    /// is the number of cores, and `ns` is the number of time steps; see
-    /// `time_step` in `Config`. `Q` is the corresponding output temperature
-    /// profile, which is given as an `nc`-by-`ns` matrix. `S` is an
-    /// `nn`-by-`ns` matrix, where `nn` is the number of thermal nodes, for the
-    /// internal usage of the function to prevent repetitive memory allocation
-    /// if the analysis is to be performed several times.
+    /// ## Arguments
+    ///
+    /// * `P` is an input power profile given as a `cores`-by-`steps` matrix;
+    ///
+    /// * `Q` is the corresponding output temperature profile given as a
+    ///   `cores`-by-`steps` matrix;
+    ///
+    /// * `S` is an `nodes`-by-`steps` matrix for the internal usage; and
+    ///
+    /// * `steps` is the number of time steps; see `time_step` in `Config`.
+    ///
+    /// The structure of the arguments allows one to avoid repetitive memory
+    /// allocation if the analysis is to be performed several times.
     #[allow(non_snake_case)]
-    pub fn compute_transient(&self, P: &[f64], Q: &mut [f64], S: &mut [f64], ns: uint) {
+    pub fn compute_transient(&self, P: &[f64], Q: &mut [f64], S: &mut [f64], steps: uint) {
         use matrix::{multiply, multiply_add};
         use std::mem::transmute_copy;
 
@@ -229,7 +226,7 @@ impl Analysis {
         let E = self.system.E.as_slice();
         let F = self.system.F.as_slice();
 
-        multiply(F, P, S, nn, nc, ns);
+        multiply(F, P, S, nn, nc, steps);
 
         // In the loop below, we need to perform operations on certain slices
         // of `S` and overwrite them with new data. `multiply_add` allows the
@@ -237,32 +234,26 @@ impl Analysis {
         // respectively) to overlap. So, let us be more efficient.
         let Z: &mut [f64] = unsafe { transmute_copy(&S) };
 
-        for i in range(1u, ns) {
+        for i in range(1u, steps) {
             let (j, k) = ((i - 1) * nn, i * nn);
-            multiply_add(E, S.slice(j, k), S.slice(k, k + nn), Z.slice_mut(k, k + nn), nn, nn, 1);
+            multiply_add(E, S.slice(j, k), S.slice(k, k + nn),
+                         Z.slice_mut(k, k + nn), nn, nn, 1);
         }
 
         for i in range(0u, nc) {
-            for j in range(0u, ns) {
+            for j in range(0u, steps) {
                 Q[nc * j + i] = D[i] * S[nn * j + i] + self.config.ambience;
             }
         }
     }
 }
 
-impl Config {
-    /// Reads a configuration structure from a JSON file.
-    pub fn load(path: Path) -> Result<Config, &'static str> {
-        use serialize::json;
-        use std::io::File;
-
-        let content = match File::open(&path).read_to_string() {
-            Ok(content) => content,
-            Err(error) => return Err(error.desc),
-        };
-        match json::decode(content.as_slice()) {
-            Ok(config) => Ok(config),
-            Err(_) => Err("cannot parse the input file"),
+impl std::default::Default for Config {
+    #[inline]
+    fn default() -> Config {
+        Config {
+            time_step: 1e-3,
+            ambience: 318.15,
         }
     }
 }
