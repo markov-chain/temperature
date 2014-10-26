@@ -6,7 +6,7 @@ mod fixture;
 
 #[test]
 fn new() {
-    let analysis = load_fixture("002");
+    let analysis = setup("002");
     let system = analysis.system;
 
     assert_eq!(system.cores, 2);
@@ -18,7 +18,7 @@ fn new() {
     assert_close!(system.F, fixture::F);
 }
 
-fn load_fixture(name: &str) -> Analysis {
+fn setup(name: &str) -> Analysis {
     use std::default::Default;
     use super::model::hotspot::new;
 
