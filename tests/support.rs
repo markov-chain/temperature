@@ -2,7 +2,7 @@ extern crate tempan;
 
 use self::tempan::Analysis;
 
-pub fn load_fixture(name: &str) -> Analysis {
+pub fn setup(name: &str) -> Analysis {
     use std::default::Default;
     use self::tempan::model::hotspot::new;
 

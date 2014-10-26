@@ -1,14 +1,12 @@
 extern crate test;
 
-extern crate tempan;
-
 #[path="../tests/support.rs"]
 mod support;
 
 #[bench]
 #[allow(non_snake_case)]
 fn compute_transient(bench: &mut test::Bencher) {
-    let analysis = support::load_fixture("032");
+    let analysis = support::setup("032");
 
     let nc = 32;
     let ns = 1000;

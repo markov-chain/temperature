@@ -8,7 +8,7 @@ mod support;
 #[test]
 #[allow(non_snake_case)]
 fn compute_transient() {
-    let analysis = support::load_fixture("002");
+    let analysis = support::setup("002");
 
     let nc = 2;
     let nn = 4 * nc + 12;
