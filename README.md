@@ -9,5 +9,5 @@ differential-algebraic equations modeling temperature of electronic systems.
 2. Implement your feature.
 3. Create a pull request.
 
-[travis-svg]: https://travis-ci.org/rs-eslab/temper.svg?branch=master
-[travis-url]: https://travis-ci.org/rs-eslab/temper
+[travis-svg]: https://travis-ci.org/rs-eslab/tempan.svg?branch=master
+[travis-url]: https://travis-ci.org/rs-eslab/tempan

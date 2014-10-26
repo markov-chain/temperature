@@ -1,10 +1,10 @@
 [package]
-name = "temper"
+name = "tempan"
 version = "0.0.1"
 authors = ["Ivan Ukhov <ivan.ukhov@gmail.com>"]
 
 [lib]
-name = "temper"
+name = "tempan"
 doctest = false
 
 [dependencies.hotspot]
