@@ -8,10 +8,10 @@ name = "tempan"
 doctest = false
 
 [dependencies.hotspot]
-git = "https://github.com/rs-eslab/hotspot"
+git = "https://github.com/stainless-steel/hotspot"
 
 [dependencies.matrix]
-git = "https://github.com/rs-math/matrix"
+git = "https://github.com/stainless-steel/matrix"
 
 [dev-dependencies.assert]
 git = "https://github.com/stainless-steel/assert"
