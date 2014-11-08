@@ -3,10 +3,6 @@ name = "tempan"
 version = "0.0.1"
 authors = ["Ivan Ukhov <ivan.ukhov@gmail.com>"]
 
-[lib]
-name = "tempan"
-doctest = false
-
 [dependencies.hotspot]
 git = "https://github.com/stainless-steel/hotspot"
 
