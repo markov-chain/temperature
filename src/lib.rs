@@ -134,6 +134,8 @@ impl Analysis {
     /// Set up the analysis for a particular problem.
     #[allow(non_snake_case)]
     pub fn new(circuit: Circuit, config: Config) -> Result<Analysis, &'static str> {
+        use std::num::Float;
+
         use matrix::multiply;
         use matrix::decomp::sym_eig;
 
