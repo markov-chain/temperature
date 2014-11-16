@@ -91,7 +91,7 @@ extern crate matrix;
 
 pub mod model;
 
-#[cfg(test)] mod test;
+#[cfg(test)] mod tests;
 
 /// Temperature analysis.
 pub struct Analysis {
