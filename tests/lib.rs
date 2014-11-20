@@ -17,7 +17,8 @@ fn compute_transient() {
     let mut Q = Vec::from_elem(nc * ns, 0.0);
     let mut S = Vec::from_elem(nn * ns, 0.0);
 
-    analysis.compute_transient(fixture::P, Q.as_mut_slice(), S.as_mut_slice(), ns);
+    analysis.compute_transient(fixture::P.as_slice(), Q.as_mut_slice(),
+                               S.as_mut_slice(), ns);
 
     assert_close!(Q, fixture::Q);
 }
