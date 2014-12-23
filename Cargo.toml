@@ -1,6 +1,6 @@
 [package]
 name = "tempan"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Ivan Ukhov <ivan.ukhov@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/stainless-steel/tempan"
@@ -12,8 +12,8 @@ differential-algebraic equations modeling temperature of electronic systems.
 """
 
 [dependencies]
-hotspot = "0.0.2"
-matrix = "0.0.2"
+hotspot = "0.0.3"
+matrix = "0.0.3"
 
 [dev-dependencies]
-assert = "0.0.1"
+assert = "0.0.2"
