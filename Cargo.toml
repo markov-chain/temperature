@@ -12,7 +12,7 @@ differential-algebraic equations modeling temperature of electronic systems.
 """
 
 [dependencies]
-hotspot = "0.0.4"
+hotspot = "0.0.5"
 matrix = "0.0.4"
 
 [dev-dependencies]
