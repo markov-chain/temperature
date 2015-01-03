@@ -140,6 +140,12 @@ impl Analysis {
         use matrix::multiply;
         use matrix::decomp::sym_eig;
 
+        #[inline(always)]
+        fn zero(length: uint) -> Vec<f64> {
+            use std::iter::repeat;
+            repeat(0.0).take(length).collect()
+        }
+
         let (nc, nn) = (circuit.cores, circuit.nodes);
 
         let mut D = circuit.capacitance; // recycle
@@ -154,15 +160,15 @@ impl Analysis {
             }
         }
 
-        let mut U = Vec::from_elem(nn * nn, 0.0);
-        let mut L = Vec::from_elem(nn, 0.0);
+        let mut U = zero(nn * nn);
+        let mut L = zero(nn);
         if sym_eig(A.as_slice(), U.as_mut_slice(), L.as_mut_slice(), nn).is_err() {
             return Err("cannot perform the eigendecomposition");
         }
 
         let dt = config.time_step;
 
-        let mut coef = Vec::from_elem(nn, 0.0);
+        let mut coef = zero(nn);
         let mut temp = A; // recycle
 
         for i in range(0u, nn) {
@@ -174,7 +180,7 @@ impl Analysis {
             }
         }
 
-        let mut E = Vec::from_elem(nn * nn, 0.0);
+        let mut E = zero(nn * nn);
         multiply(U.as_slice(), temp.as_slice(), E.as_mut_slice(), nn, nn, nn);
 
         for i in range(0u, nn) {
@@ -186,7 +192,7 @@ impl Analysis {
             }
         }
 
-        let mut F = Vec::from_elem(nn * nc, 0.0);
+        let mut F = zero(nn * nc);
         multiply(U.as_slice(), temp.as_slice(), F.as_mut_slice(), nn, nn, nc);
 
         Ok(Analysis {
