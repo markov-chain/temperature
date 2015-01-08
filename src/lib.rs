@@ -85,13 +85,16 @@
 //! split into small intervals, and the above equation is successively applied
 //! to each of these small intervals.
 
-#![feature(phase)]
+#[cfg(test)]
+#[macro_use]
+extern crate assert;
 
 extern crate matrix;
 
 pub mod model;
 
-#[cfg(test)] mod tests;
+#[cfg(test)]
+mod tests;
 
 /// Temperature analysis.
 pub struct Analysis {

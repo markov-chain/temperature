@@ -1,5 +1,3 @@
-#[phase(plugin)] extern crate assert;
-
 use super::Analysis;
 
 mod fixture;

@@ -1,6 +1,5 @@
-#![feature(phase)]
-
-#[phase(plugin)] extern crate assert;
+#[macro_use]
+extern crate assert;
 
 mod fixture;
 mod support;
