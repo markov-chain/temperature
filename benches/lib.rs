@@ -1,3 +1,5 @@
+#![allow(unstable)]
+
 extern crate test;
 
 #[path="../tests/support.rs"]
@@ -14,11 +16,11 @@ fn compute_transient(bench: &mut test::Bencher) {
     let ns = 1000;
     let nn = 4 * nc + 12;
 
-    let P = range(0u, nc * ns).map(|_| std::rand::random()).collect::<Vec<_>>();
-    let mut Q = repeat(0.0).take(nc * ns).collect::<Vec<_>>();
-    let mut S = repeat(0.0).take(nn * ns).collect::<Vec<_>>();
+    let P = range(0, nc * ns).map(|_| std::rand::random()).collect::<Vec<f64>>();
+    let mut Q = repeat(0.0).take(nc * ns).collect::<Vec<f64>>();
+    let mut S = repeat(0.0).take(nn * ns).collect::<Vec<f64>>();
 
     bench.iter(|| {
-        analysis.compute_transient(P.as_slice(), Q.as_mut_slice(), S.as_mut_slice(), ns);
+        analysis.compute_transient(&P[], &mut Q[], &mut S[], ns);
     });
 }

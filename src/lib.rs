@@ -85,6 +85,8 @@
 //! split into small intervals, and the above equation is successively applied
 //! to each of these small intervals.
 
+#![allow(unstable)]
+
 #[cfg(test)]
 #[macro_use]
 extern crate assert;
@@ -105,9 +107,9 @@ pub struct Analysis {
 /// A thermal RC circuit.
 pub struct Circuit {
     /// The number of active thermal nodes.
-    pub cores: uint,
+    pub cores: usize,
     /// The number of all thermal nodes.
-    pub nodes: uint,
+    pub nodes: usize,
     /// An `nodes`-element vector of thermal capacitance.
     pub capacitance: Vec<f64>,
     /// An `nodes`-by-`nodes` matrix of thermal conductance.
@@ -125,8 +127,8 @@ pub struct Config {
 
 #[allow(non_snake_case)]
 struct System {
-    cores: uint,
-    nodes: uint,
+    cores: usize,
+    nodes: usize,
     #[allow(dead_code)] U: Vec<f64>,
     #[allow(dead_code)] L: Vec<f64>,
     D: Vec<f64>,
@@ -144,7 +146,7 @@ impl Analysis {
         use matrix::decomp::sym_eig;
 
         #[inline(always)]
-        fn zero(length: uint) -> Vec<f64> {
+        fn zero(length: usize) -> Vec<f64> {
             use std::iter::repeat;
             repeat(0.0).take(length).collect()
         }
@@ -152,20 +154,20 @@ impl Analysis {
         let (nc, nn) = (circuit.cores, circuit.nodes);
 
         let mut D = circuit.capacitance; // recycle
-        for i in range(0u, nn) {
+        for i in range(0, nn) {
             D[i] = (1.0 / D[i]).sqrt();
         }
 
         let mut A = circuit.conductance; // recycle
-        for i in range(0u, nn) {
-            for j in range(0u, nn) {
+        for i in range(0, nn) {
+            for j in range(0, nn) {
                 A[j * nn + i] = -1.0 * D[i] * D[j] * A[j * nn + i];
             }
         }
 
         let mut U = zero(nn * nn);
         let mut L = zero(nn);
-        if sym_eig(A.as_slice(), U.as_mut_slice(), L.as_mut_slice(), nn).is_err() {
+        if sym_eig(&A[], &mut U[], &mut L[], nn).is_err() {
             return Err("cannot perform the eigendecomposition");
         }
 
@@ -174,29 +176,29 @@ impl Analysis {
         let mut coef = zero(nn);
         let mut temp = A; // recycle
 
-        for i in range(0u, nn) {
+        for i in range(0, nn) {
             coef[i] = (dt * L[i]).exp();
         }
-        for i in range(0u, nn) {
-            for j in range(0u, nn) {
+        for i in range(0, nn) {
+            for j in range(0, nn) {
                 temp[j * nn + i] = coef[i] * U[i * nn + j];
             }
         }
 
         let mut E = zero(nn * nn);
-        multiply(U.as_slice(), temp.as_slice(), E.as_mut_slice(), nn, nn, nn);
+        multiply(&U[], &temp[], &mut E[], nn, nn, nn);
 
-        for i in range(0u, nn) {
+        for i in range(0, nn) {
             coef[i] = (coef[i] - 1.0) / L[i];
         }
-        for i in range(0u, nn) {
-            for j in range(0u, nc) {
+        for i in range(0, nn) {
+            for j in range(0, nc) {
                 temp[j * nn + i] = coef[i] * U[i * nn + j] * D[j];
             }
         }
 
         let mut F = zero(nn * nc);
-        multiply(U.as_slice(), temp.as_slice(), F.as_mut_slice(), nn, nn, nc);
+        multiply(&U[], &temp[], &mut F[], nn, nn, nc);
 
         Ok(Analysis {
             config: config,
@@ -228,15 +230,15 @@ impl Analysis {
     /// The structure of the arguments allows one to avoid repetitive memory
     /// allocation if the analysis is to be performed several times.
     #[allow(non_snake_case)]
-    pub fn compute_transient(&self, P: &[f64], Q: &mut [f64], S: &mut [f64], steps: uint) {
+    pub fn compute_transient(&self, P: &[f64], Q: &mut [f64], S: &mut [f64], steps: usize) {
         use matrix::{multiply, multiply_add};
         use std::mem::transmute_copy;
 
         let (nc, nn) = (self.system.cores, self.system.nodes);
 
-        let D = self.system.D.as_slice();
-        let E = self.system.E.as_slice();
-        let F = self.system.F.as_slice();
+        let D = &self.system.D[];
+        let E = &self.system.E[];
+        let F = &self.system.F[];
 
         multiply(F, P, S, nn, nc, steps);
 
@@ -246,14 +248,13 @@ impl Analysis {
         // respectively) to overlap. So, let us be more efficient.
         let Z: &mut [f64] = unsafe { transmute_copy(&S) };
 
-        for i in range(1u, steps) {
+        for i in range(1, steps) {
             let (j, k) = ((i - 1) * nn, i * nn);
-            multiply_add(E, S.slice(j, k), S.slice(k, k + nn),
-                         Z.slice_mut(k, k + nn), nn, nn, 1);
+            multiply_add(E, &S[j..k], &S[k..k + nn], &mut Z[k..k + nn], nn, nn, 1);
         }
 
-        for i in range(0u, nc) {
-            for j in range(0u, steps) {
+        for i in range(0, nc) {
+            for j in range(0, steps) {
                 Q[nc * j + i] = D[i] * S[nn * j + i] + self.config.ambience;
             }
         }
