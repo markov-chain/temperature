@@ -11,6 +11,6 @@ differential-algebraic equations modeling temperature of electronic systems.
 2. Implement your idea.
 3. Create a pull request.
 
-[travis-svg]: https://travis-ci.org/stainless-steel/tempan.svg?branch=master
-[travis-url]: https://travis-ci.org/stainless-steel/tempan
-[docs]: https://stainless-steel.github.io/tempan
+[travis-svg]: https://travis-ci.org/stainless-steel/temperature.svg?branch=master
+[travis-url]: https://travis-ci.org/stainless-steel/temperature
+[docs]: https://stainless-steel.github.io/temperature

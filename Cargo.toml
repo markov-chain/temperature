@@ -1,11 +1,11 @@
 [package]
-name = "tempan"
-version = "0.0.7"
+name = "temperature"
+version = "0.0.8"
 authors = ["Ivan Ukhov <ivan.ukhov@gmail.com>"]
 license = "MIT"
-repository = "https://github.com/stainless-steel/tempan"
-homepage = "https://github.com/stainless-steel/tempan"
-documentation = "https://stainless-steel.github.io/tempan"
+repository = "https://github.com/stainless-steel/temperature"
+homepage = "https://github.com/stainless-steel/temperature"
+documentation = "https://stainless-steel.github.io/temperature"
 description = """
 The library provides an exponential-integrator-based solver for systems of
 differential-algebraic equations modeling temperature of electronic systems.

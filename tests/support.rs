@@ -1,10 +1,10 @@
-extern crate tempan;
+extern crate temperature;
 
-use self::tempan::Analysis;
+use self::temperature::Analysis;
 
 pub fn setup(name: &str) -> Analysis {
     use std::default::Default;
-    use self::tempan::model::hotspot::new;
+    use self::temperature::model::hotspot::new;
 
     let circuit = new(&find_fixture(format!("{}.flp", name).as_slice()),
                       &find_fixture("hotspot.config"), "").unwrap();
