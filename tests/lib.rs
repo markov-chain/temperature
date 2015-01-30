@@ -1,7 +1,9 @@
-#![allow(unstable)]
+#![feature(core, io, path)]
 
 #[macro_use]
 extern crate assert;
+
+extern crate temperature;
 
 mod fixture;
 mod support;

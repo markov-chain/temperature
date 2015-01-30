@@ -1,4 +1,4 @@
-#![allow(unstable)]
+#![feature(core, io, path, rand, test)]
 
 extern crate test;
 

@@ -86,6 +86,7 @@
 //! to each of these small intervals.
 
 #![feature(core)]
+#![cfg_attr(test, feature(io, path))]
 
 #[cfg(test)]
 #[macro_use]
