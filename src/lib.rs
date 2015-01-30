@@ -85,7 +85,7 @@
 //! split into small intervals, and the above equation is successively applied
 //! to each of these small intervals.
 
-#![allow(unstable)]
+#![feature(core)]
 
 #[cfg(test)]
 #[macro_use]
