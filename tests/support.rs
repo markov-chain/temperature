@@ -1,5 +1,5 @@
 #![allow(unused_attributes)]
-#![feature(core, io, path)]
+#![feature(io, path)]
 
 extern crate temperature;
 
