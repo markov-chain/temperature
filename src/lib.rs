@@ -85,8 +85,8 @@
 //! split into small intervals, and the above equation is successively applied
 //! to each of these small intervals.
 
-#![feature(core)]
-#![cfg_attr(test, feature(io, path))]
+#![feature(core, path)]
+#![cfg_attr(test, feature(io))]
 
 #[cfg(test)]
 #[macro_use]
