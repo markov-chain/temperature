@@ -86,7 +86,7 @@
 //! to each of these small intervals.
 
 #![feature(core, path)]
-#![cfg_attr(test, feature(io))]
+#![cfg_attr(test, feature(fs))]
 
 #[cfg(test)]
 #[macro_use]
@@ -168,7 +168,7 @@ impl Analysis {
 
         let mut U = zero(nn * nn);
         let mut L = zero(nn);
-        if sym_eig(&A[], &mut U[], &mut L[], nn).is_err() {
+        if sym_eig(&A, &mut U, &mut L, nn).is_err() {
             return Err("cannot perform the eigendecomposition");
         }
 
@@ -187,7 +187,7 @@ impl Analysis {
         }
 
         let mut E = zero(nn * nn);
-        multiply(&U[], &temp[], &mut E[], nn, nn, nn);
+        multiply(&U, &temp, &mut E, nn, nn, nn);
 
         for i in range(0, nn) {
             coef[i] = (coef[i] - 1.0) / L[i];
@@ -199,7 +199,7 @@ impl Analysis {
         }
 
         let mut F = zero(nn * nc);
-        multiply(&U[], &temp[], &mut F[], nn, nn, nc);
+        multiply(&U, &temp, &mut F, nn, nn, nc);
 
         Ok(Analysis {
             config: config,
@@ -237,9 +237,9 @@ impl Analysis {
 
         let (nc, nn) = (self.system.cores, self.system.nodes);
 
-        let D = &self.system.D[];
-        let E = &self.system.E[];
-        let F = &self.system.F[];
+        let D = &self.system.D;
+        let E = &self.system.E;
+        let F = &self.system.F;
 
         multiply(F, P, S, nn, nc, steps);
 

@@ -1,4 +1,4 @@
-#![feature(core, io, path)]
+#![feature(fs, path)]
 
 #[macro_use]
 extern crate assert;
@@ -22,7 +22,7 @@ fn compute_transient() {
     let mut Q = repeat(0.0).take(nc * ns).collect::<Vec<_>>();
     let mut S = repeat(0.0).take(nn * ns).collect::<Vec<_>>();
 
-    analysis.compute_transient(&fixture::P[], &mut Q[], &mut S[], ns);
+    analysis.compute_transient(&fixture::P, &mut Q, &mut S, ns);
 
     assert_close!(Q, fixture::Q);
 }

@@ -1,5 +1,6 @@
-#![feature(core, io, path, rand, test)]
+#![feature(core, fs, path, test)]
 
+extern crate rand;
 extern crate test;
 
 #[path="../tests/support.rs"]
@@ -16,11 +17,11 @@ fn compute_transient(bench: &mut test::Bencher) {
     let ns = 1000;
     let nn = 4 * nc + 12;
 
-    let P = range(0, nc * ns).map(|_| std::rand::random()).collect::<Vec<f64>>();
-    let mut Q = repeat(0.0).take(nc * ns).collect::<Vec<f64>>();
-    let mut S = repeat(0.0).take(nn * ns).collect::<Vec<f64>>();
+    let P = range(0, nc * ns).map(|_| rand::random()).collect::<Vec<_>>();
+    let mut Q = repeat(0.0).take(nc * ns).collect::<Vec<_>>();
+    let mut S = repeat(0.0).take(nn * ns).collect::<Vec<_>>();
 
     bench.iter(|| {
-        analysis.compute_transient(&P[], &mut Q[], &mut S[], ns);
+        analysis.compute_transient(&P, &mut Q, &mut S, ns);
     });
 }

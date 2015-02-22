@@ -1,19 +1,20 @@
 [package]
 name = "temperature"
-version = "0.0.13"
+version = "0.0.14"
 authors = ["Ivan Ukhov <ivan.ukhov@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/stainless-steel/temperature"
 homepage = "https://github.com/stainless-steel/temperature"
 documentation = "https://stainless-steel.github.io/temperature"
 description = """
-The library provides an exponential-integrator-based solver for systems of
+The package provides an exponential-integrator-based solver for systems of
 differential-algebraic equations modeling temperature of electronic systems.
 """
 
 [dependencies]
-hotspot = "0.0.10"
-matrix = "0.0.11"
+hotspot = "0.0.13"
+matrix = "0.0.13"
 
 [dev-dependencies]
 assert = "0.1"
+rand = "*"

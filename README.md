@@ -1,6 +1,6 @@
 # Temperature Analysis [![Build Status][travis-svg]][travis-url]
 
-The library provides an exponential-integrator-based solver for systems of
+The package provides an exponential-integrator-based solver for systems of
 differential-algebraic equations modeling temperature of electronic systems.
 
 ## [Documentation][docs]
