@@ -1,6 +1,6 @@
 [package]
 name = "temperature"
-version = "0.0.14"
+version = "0.0.15"
 authors = ["Ivan Ukhov <ivan.ukhov@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/stainless-steel/temperature"
@@ -12,7 +12,7 @@ differential-algebraic equations modeling temperature of electronic systems.
 """
 
 [dependencies]
-hotspot = "0.0.13"
+hotspot = "0.0.15"
 matrix = "0.0.13"
 
 [dev-dependencies]
