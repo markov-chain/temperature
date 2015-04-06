@@ -1,5 +1,4 @@
-#![allow(unused_attributes)]
-#![feature(fs, path)]
+#![feature(path_ext)]
 
 extern crate temperature;
 
@@ -19,7 +18,7 @@ pub fn setup(name: &str) -> Analysis {
 
 fn find_fixture(name: &str) -> PathBuf {
     use std::fs::PathExt;
-    let path = PathBuf::new("tests").join("fixtures").join(name);
+    let path = PathBuf::from("tests").join("fixtures").join(name);
     assert!(path.exists());
     path
 }

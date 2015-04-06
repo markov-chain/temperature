@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
-use super::Analysis;
+use assert;
+use Analysis;
 
 mod fixture;
 
@@ -11,11 +12,11 @@ fn new() {
 
     assert_eq!(system.cores, 2);
     assert_eq!(system.nodes, 4 * 2 + 12);
-    assert_abs_close!(system.U, fixture::U);
-    assert_close!(system.L, fixture::L);
-    assert_close!(system.D, fixture::D);
-    assert_close!(system.E, fixture::E);
-    assert_close!(system.F, fixture::F);
+    assert::absolute_within(&system.U, &fixture::U, 1e-9);
+    assert::within(&system.L, &fixture::L, 1e-10);
+    assert::within(&system.D, &fixture::D, 1e-13);
+    assert::within(&system.E, &fixture::E, 1e-13);
+    assert::within(&system.F, &fixture::F, 1e-13);
 }
 
 fn setup(name: &str) -> Analysis {
@@ -30,7 +31,7 @@ fn setup(name: &str) -> Analysis {
 
 fn find_fixture(name: &str) -> PathBuf {
     use std::fs::PathExt;
-    let path = PathBuf::new("tests").join("fixtures").join(name);
+    let path = PathBuf::from("tests").join("fixtures").join(name);
     assert!(path.exists());
     path
 }

@@ -85,14 +85,13 @@
 //! split into small intervals, and the above equation is successively applied
 //! to each of these small intervals.
 
-#![feature(core, path)]
-#![cfg_attr(test, feature(fs))]
+#![cfg_attr(test, feature(path_ext))]
 
 #[cfg(test)]
-#[macro_use]
 extern crate assert;
 
 extern crate matrix;
+extern crate num;
 
 pub mod model;
 
@@ -141,7 +140,7 @@ impl Analysis {
     /// Set up the analysis for a particular problem.
     #[allow(non_snake_case)]
     pub fn new(circuit: Circuit, config: Config) -> Result<Analysis, &'static str> {
-        use std::num::Float;
+        use num::traits::Float;
 
         use matrix::multiply;
         use matrix::decomp::sym_eig;
@@ -155,13 +154,13 @@ impl Analysis {
         let (nc, nn) = (circuit.cores, circuit.nodes);
 
         let mut D = circuit.capacitance; // recycle
-        for i in range(0, nn) {
+        for i in (0..nn) {
             D[i] = (1.0 / D[i]).sqrt();
         }
 
         let mut A = circuit.conductance; // recycle
-        for i in range(0, nn) {
-            for j in range(0, nn) {
+        for i in (0..nn) {
+            for j in (0..nn) {
                 A[j * nn + i] = -1.0 * D[i] * D[j] * A[j * nn + i];
             }
         }
@@ -177,11 +176,11 @@ impl Analysis {
         let mut coef = zero(nn);
         let mut temp = A; // recycle
 
-        for i in range(0, nn) {
+        for i in (0..nn) {
             coef[i] = (dt * L[i]).exp();
         }
-        for i in range(0, nn) {
-            for j in range(0, nn) {
+        for i in (0..nn) {
+            for j in (0..nn) {
                 temp[j * nn + i] = coef[i] * U[i * nn + j];
             }
         }
@@ -189,11 +188,11 @@ impl Analysis {
         let mut E = zero(nn * nn);
         multiply(&U, &temp, &mut E, nn, nn, nn);
 
-        for i in range(0, nn) {
+        for i in (0..nn) {
             coef[i] = (coef[i] - 1.0) / L[i];
         }
-        for i in range(0, nn) {
-            for j in range(0, nc) {
+        for i in (0..nn) {
+            for j in (0..nc) {
                 temp[j * nn + i] = coef[i] * U[i * nn + j] * D[j];
             }
         }
@@ -249,13 +248,13 @@ impl Analysis {
         // respectively) to overlap. So, let us be more efficient.
         let Z: &mut [f64] = unsafe { transmute_copy(&S) };
 
-        for i in range(1, steps) {
+        for i in (1..steps) {
             let (j, k) = ((i - 1) * nn, i * nn);
             multiply_add(E, &S[j..k], &S[k..k + nn], &mut Z[k..k + nn], nn, nn, 1);
         }
 
-        for i in range(0, nc) {
-            for j in range(0, steps) {
+        for i in (0..nc) {
+            for j in (0..steps) {
                 Q[nc * j + i] = D[i] * S[nn * j + i] + self.config.ambience;
             }
         }

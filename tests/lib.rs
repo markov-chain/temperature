@@ -1,8 +1,6 @@
-#![feature(fs, path)]
+#![feature(path_ext)]
 
-#[macro_use]
 extern crate assert;
-
 extern crate temperature;
 
 mod fixture;
@@ -24,5 +22,5 @@ fn compute_transient() {
 
     analysis.compute_transient(&fixture::P, &mut Q, &mut S, ns);
 
-    assert_close!(Q, fixture::Q);
+    assert::within(&Q, &fixture::Q, 1e-12);
 }
