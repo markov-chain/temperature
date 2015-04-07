@@ -1,9 +1,10 @@
 #![feature(path_ext)]
 
 extern crate assert;
+
 extern crate temperature;
 
-mod fixture;
+mod fixtures;
 mod support;
 
 #[test]
@@ -15,12 +16,12 @@ fn compute_transient() {
 
     let nc = 2;
     let nn = 4 * nc + 12;
-    let ns = fixture::P.len() / nc;
+    let ns = fixtures::P.len() / nc;
 
     let mut Q = repeat(0.0).take(nc * ns).collect::<Vec<_>>();
     let mut S = repeat(0.0).take(nn * ns).collect::<Vec<_>>();
 
-    analysis.compute_transient(&fixture::P, &mut Q, &mut S, ns);
+    analysis.compute_transient(&fixtures::P, &mut Q, &mut S, ns);
 
-    assert::within(&Q, &fixture::Q, 1e-12);
+    assert::within(&Q, &fixtures::Q, 1e-12);
 }

@@ -1,14 +1,10 @@
-#![feature(path_ext)]
-
-extern crate temperature;
-
 use std::path::PathBuf;
 
-use self::temperature::Analysis;
+use temperature::Analysis;
 
 pub fn setup(name: &str) -> Analysis {
     use std::default::Default;
-    use self::temperature::model::hotspot::new;
+    use temperature::model::hotspot::new;
 
     let circuit = new(&find_fixture(&format!("{}.flp", name)),
                       &find_fixture("hotspot.config"), "").unwrap();

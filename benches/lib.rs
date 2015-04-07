@@ -1,9 +1,11 @@
-#![feature(core, fs, path, test)]
+#![feature(path_ext, test)]
 
 extern crate rand;
 extern crate test;
 
-#[path="../tests/support.rs"]
+extern crate temperature;
+
+#[path="../tests/support/mod.rs"]
 mod support;
 
 #[bench]
@@ -17,7 +19,7 @@ fn compute_transient(bench: &mut test::Bencher) {
     let ns = 1000;
     let nn = 4 * nc + 12;
 
-    let P = range(0, nc * ns).map(|_| rand::random()).collect::<Vec<_>>();
+    let P = (0..nc * ns).map(|_| rand::random()).collect::<Vec<_>>();
     let mut Q = repeat(0.0).take(nc * ns).collect::<Vec<_>>();
     let mut S = repeat(0.0).take(nn * ns).collect::<Vec<_>>();
 

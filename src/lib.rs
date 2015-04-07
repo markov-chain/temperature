@@ -117,7 +117,6 @@ pub struct Circuit {
 }
 
 /// A configuration of temperature analysis.
-#[allow(missing_copy_implementations)]
 pub struct Config {
     /// The sampling interval of power and temperature profiles in seconds.
     pub time_step: f64,
