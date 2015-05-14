@@ -1,9 +1,8 @@
 #![feature(path_ext, test)]
 
 extern crate rand;
-extern crate test;
-
 extern crate temperature;
+extern crate test;
 
 #[path="../tests/support/mod.rs"]
 mod support;
