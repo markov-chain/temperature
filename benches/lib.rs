@@ -1,4 +1,4 @@
-#![feature(path_ext, test)]
+#![feature(test)]
 
 extern crate rand;
 extern crate temperature;

@@ -1,3 +1,4 @@
+use std::fs;
 use std::path::PathBuf;
 
 use temperature::Analysis;
@@ -13,8 +14,7 @@ pub fn setup(name: &str) -> Analysis {
 }
 
 fn find_fixture(name: &str) -> PathBuf {
-    use std::fs::PathExt;
     let path = PathBuf::from("tests").join("fixtures").join(name);
-    assert!(path.exists());
+    assert!(fs::metadata(&path).is_ok());
     path
 }

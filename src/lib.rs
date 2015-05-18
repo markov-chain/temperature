@@ -82,8 +82,6 @@
 //! the whole time span of interest, the time span is split into small intervals, and the above
 //! equation is successively applied to each of these small intervals.
 
-#![cfg_attr(test, feature(path_ext))]
-
 #[cfg(test)]
 extern crate assert;
 
