@@ -1,4 +1,4 @@
-# Temperature Analysis [![Build Status][status-svg]][status-url]
+# Temperature [![Version][version-img]][version-url] [![Status][status-img]][status-url]
 
 The package provides an exponential-integrator-based solver for systems of
 differential-algebraic equations modeling temperature of electronic systems.
@@ -11,6 +11,8 @@ differential-algebraic equations modeling temperature of electronic systems.
 2. Implement your idea.
 3. Open a pull request.
 
-[status-svg]: https://travis-ci.org/stainless-steel/temperature.svg?branch=master
-[status-url]: https://travis-ci.org/stainless-steel/temperature
-[docs]: https://stainless-steel.github.io/temperature
+[version-img]: https://img.shields.io/crates/v/temperature.svg
+[version-url]: https://crates.io/crates/temperature
+[status-svg]: https://travis-ci.org/simulated-reality/temperature.svg?branch=master
+[status-url]: https://travis-ci.org/simulated-reality/temperature
+[docs]: https://simulated-reality.github.io/temperature

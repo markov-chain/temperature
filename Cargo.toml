@@ -3,9 +3,9 @@ name = "temperature"
 version = "0.1.0"
 authors = ["Ivan Ukhov <ivan.ukhov@gmail.com>"]
 license = "MIT"
-repository = "https://github.com/stainless-steel/temperature"
-homepage = "https://github.com/stainless-steel/temperature"
-documentation = "https://stainless-steel.github.io/temperature"
+repository = "https://github.com/simulated-reality/temperature"
+homepage = "https://github.com/simulated-reality/temperature"
+documentation = "https://simulated-reality.github.io/temperature"
 description = """
 The package provides an exponential-integrator-based solver for systems of
 differential-algebraic equations modeling temperature of electronic systems.
