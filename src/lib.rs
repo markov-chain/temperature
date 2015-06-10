@@ -85,7 +85,7 @@
 #[cfg(test)]
 extern crate assert;
 
-extern crate matrix;
+extern crate linear;
 extern crate num;
 
 pub mod model;
@@ -119,12 +119,13 @@ pub struct Config {
     pub ambience: f64,
 }
 
+#[allow(dead_code)]
 #[allow(non_snake_case)]
 struct System {
     cores: usize,
     nodes: usize,
-    #[allow(dead_code)] U: Vec<f64>,
-    #[allow(dead_code)] L: Vec<f64>,
+    U: Vec<f64>,
+    L: Vec<f64>,
     D: Vec<f64>,
     E: Vec<f64>,
     F: Vec<f64>,
@@ -134,16 +135,9 @@ impl Analysis {
     /// Set up the analysis for a particular problem.
     #[allow(non_snake_case)]
     pub fn new(circuit: Circuit, config: Config) -> Result<Analysis, &'static str> {
+        use linear::multiply;
+        use linear::symmetric_eigen;
         use num::traits::Float;
-
-        use matrix::multiply;
-        use matrix::decomp::sym_eig;
-
-        #[inline(always)]
-        fn zero(length: usize) -> Vec<f64> {
-            use std::iter::repeat;
-            repeat(0.0).take(length).collect()
-        }
 
         let (nc, nn) = (circuit.cores, circuit.nodes);
 
@@ -159,40 +153,41 @@ impl Analysis {
             }
         }
 
-        let mut U = zero(nn * nn);
-        let mut L = zero(nn);
-        if sym_eig(&A, &mut U, &mut L, nn).is_err() {
-            return Err("cannot perform the eigendecomposition");
+        let mut U = A; // recycle
+        let mut L = vec![0.0; nn];
+        match symmetric_eigen(&mut U, &mut L) {
+            Err(_) => return Err("cannot perform the eigendecomposition"),
+            _ => {},
         }
 
         let dt = config.time_step;
 
-        let mut coef = zero(nn);
-        let mut temp = A; // recycle
+        let mut temp1 = vec![0.0; nn];
+        let mut temp2 = vec![0.0; nn * nn];
 
         for i in (0..nn) {
-            coef[i] = (dt * L[i]).exp();
+            temp1[i] = (dt * L[i]).exp();
         }
         for i in (0..nn) {
             for j in (0..nn) {
-                temp[j * nn + i] = coef[i] * U[i * nn + j];
+                temp2[j * nn + i] = temp1[i] * U[i * nn + j];
             }
         }
 
-        let mut E = zero(nn * nn);
-        multiply(&U, &temp, &mut E, nn, nn, nn);
+        let mut E = vec![0.0; nn * nn];
+        multiply(1.0, &U, &temp2, 1.0, &mut E, nn);
 
         for i in (0..nn) {
-            coef[i] = (coef[i] - 1.0) / L[i];
+            temp1[i] = (temp1[i] - 1.0) / L[i];
         }
         for i in (0..nn) {
             for j in (0..nc) {
-                temp[j * nn + i] = coef[i] * U[i * nn + j] * D[j];
+                temp2[j * nn + i] = temp1[i] * U[i * nn + j] * D[j];
             }
         }
 
-        let mut F = zero(nn * nc);
-        multiply(&U, &temp, &mut F, nn, nn, nc);
+        let mut F = vec![0.0; nn * nc];
+        multiply(1.0, &U, &temp2[..(nn * nc)], 1.0, &mut F, nn);
 
         Ok(Analysis {
             config: config,
@@ -224,7 +219,7 @@ impl Analysis {
     /// analysis is to be performed several times.
     #[allow(non_snake_case)]
     pub fn compute_transient(&self, P: &[f64], Q: &mut [f64], S: &mut [f64], steps: usize) {
-        use matrix::{multiply, multiply_add};
+        use linear::multiply;
         use std::mem::transmute_copy;
 
         let (nc, nn) = (self.system.cores, self.system.nodes);
@@ -233,21 +228,21 @@ impl Analysis {
         let E = &self.system.E;
         let F = &self.system.F;
 
-        multiply(F, P, S, nn, nc, steps);
+        multiply(1.0, F, P, 1.0, S, nn);
 
-        // In the loop below, we need to perform operations on certain slices of `S` and overwrite
-        // them with new data. `multiply_add` allows the third and fourth arguments (one of the
-        // inputs and the only output, respectively) to overlap. So, let us be more efficient.
+        // In the loop below, we need to perform operations on certain slices of
+        // `S` and overwrite them with new data. Let us be efficient.
         let Z: &mut [f64] = unsafe { transmute_copy(&S) };
 
         for i in (1..steps) {
             let (j, k) = ((i - 1) * nn, i * nn);
-            multiply_add(E, &S[j..k], &S[k..k + nn], &mut Z[k..k + nn], nn, nn, 1);
+            multiply(1.0, E, &S[j..k], 1.0, &mut Z[k..k + nn], nn);
         }
 
+        let ambience = self.config.ambience;
         for i in (0..nc) {
             for j in (0..steps) {
-                Q[nc * j + i] = D[i] * S[nn * j + i] + self.config.ambience;
+                Q[nc * j + i] = D[i] * S[nn * j + i] + ambience;
             }
         }
     }
