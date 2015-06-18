@@ -13,6 +13,6 @@ differential-algebraic equations modeling temperature of electronic systems.
 
 [version-img]: https://img.shields.io/crates/v/temperature.svg
 [version-url]: https://crates.io/crates/temperature
-[status-img]: https://travis-ci.org/simulated-reality/temperature.svg?branch=master
-[status-url]: https://travis-ci.org/simulated-reality/temperature
-[docs]: https://simulated-reality.github.io/temperature
+[status-img]: https://travis-ci.org/markov-chain/temperature.svg?branch=master
+[status-url]: https://travis-ci.org/markov-chain/temperature
+[docs]: https://markov-chain.github.io/temperature
