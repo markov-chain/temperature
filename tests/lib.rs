@@ -18,5 +18,5 @@ fn compute_transient() {
 
     analysis.compute_transient(&fixtures::P, &mut Q, &mut S, ns);
 
-    assert::within(&Q[..], &fixtures::Q[..], 1e-12);
+    assert::close(&Q, &fixtures::Q[..], 1e-12);
 }
