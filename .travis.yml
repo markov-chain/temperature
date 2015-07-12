@@ -7,8 +7,12 @@ before_install:
   - sudo apt-get install cmake
   - sudo apt-get install gfortran
 
+script:
+  - cargo build --verbose --features=hotspot
+  - cargo test --verbose --features=hotspot
+
 after_success:
-  - curl https://stainless-steel.github.io/travis/after_success.sh | bash
+  - curl https://stainless-steel.github.io/travis/after_success.sh | CARGO_FLAGS=--features=hotspot bash
 
 env:
   global:
