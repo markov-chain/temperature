@@ -1,8 +1,10 @@
 #![feature(test)]
 
-extern crate rand;
+extern crate random;
 extern crate temperature;
 extern crate test;
+
+use random::Source;
 
 #[path="../tests/support/mod.rs"]
 mod support;
@@ -18,11 +20,9 @@ fn compute_transient(bench: &mut test::Bencher) {
     let ns = 1000;
     let nn = 4 * nc + 12;
 
-    let P = (0..nc * ns).map(|_| rand::random()).collect::<Vec<_>>();
+    let P = random::default().iter().take(nc * ns).collect::<Vec<_>>();
     let mut Q = repeat(0.0).take(nc * ns).collect::<Vec<_>>();
     let mut S = repeat(0.0).take(nn * ns).collect::<Vec<_>>();
 
-    bench.iter(|| {
-        analysis.compute_transient(&P, &mut Q, &mut S, ns);
-    });
+    bench.iter(|| analysis.compute_transient(&P, &mut Q, &mut S, ns));
 }

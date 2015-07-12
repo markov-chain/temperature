@@ -17,4 +17,4 @@ linear = "*"
 
 [dev-dependencies]
 assert = "*"
-rand = "*"
+random = "*"
