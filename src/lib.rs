@@ -90,6 +90,8 @@ extern crate assert;
 
 extern crate linear;
 
+use std::{error, fmt};
+
 pub mod model;
 
 #[cfg(test)]
@@ -133,10 +135,29 @@ struct System {
     F: Vec<f64>,
 }
 
+/// An error.
+#[derive(Debug)]
+pub struct Error(String);
+
+/// A result.
+pub type Result<T> = std::result::Result<T, Error>;
+
+impl fmt::Display for Error {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(formatter)
+    }
+}
+
+impl error::Error for Error {
+    fn description(&self) -> &str {
+        &self.0
+    }
+}
+
 impl Analysis {
     /// Set up the analysis for a particular problem.
     #[allow(non_snake_case)]
-    pub fn new(circuit: Circuit, config: Config) -> Result<Analysis, &'static str> {
+    pub fn new(circuit: Circuit, config: Config) -> Result<Analysis> {
         use linear::multiply;
         use linear::symmetric_eigen;
 
@@ -156,9 +177,8 @@ impl Analysis {
 
         let mut U = A; // recycle
         let mut L = vec![0.0; nn];
-        match symmetric_eigen(&mut U, &mut L) {
-            Err(_) => return Err("cannot perform the eigendecomposition"),
-            _ => {},
+        if let Err(error) = symmetric_eigen(&mut U, &mut L) {
+            return Err(Error(error.to_string()));
         }
 
         let dt = config.time_step;
