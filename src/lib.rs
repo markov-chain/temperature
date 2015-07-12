@@ -100,26 +100,6 @@ pub struct Analysis {
     system: System,
 }
 
-/// A thermal RC circuit.
-pub struct Circuit {
-    /// The number of active thermal nodes.
-    pub cores: usize,
-    /// The number of all thermal nodes.
-    pub nodes: usize,
-    /// An `nodes`-element vector of thermal capacitance.
-    pub capacitance: Vec<f64>,
-    /// An `nodes`-by-`nodes` matrix of thermal conductance.
-    pub conductance: Vec<f64>,
-}
-
-/// A configuration of temperature analysis.
-pub struct Config {
-    /// The sampling interval of power and temperature profiles in seconds.
-    pub time_step: f64,
-    /// The temperature of the ambience in Celsius or Kelvin.
-    pub ambience: f64,
-}
-
 #[allow(dead_code)]
 #[allow(non_snake_case)]
 struct System {
@@ -132,6 +112,26 @@ struct System {
     F: Vec<f64>,
 }
 
+/// A thermal RC circuit.
+pub trait Circuit {
+    /// The number of active thermal nodes.
+    fn cores(&self) -> usize;
+    /// The number of all thermal nodes.
+    fn nodes(&self) -> usize;
+    /// An `nodes`-element vector of thermal capacitance.
+    fn capacitance(&self) -> Vec<f64>;
+    /// An `nodes`-by-`nodes` matrix of thermal conductance.
+    fn conductance(&self) -> Vec<f64>;
+}
+
+/// A configuration of temperature analysis.
+pub struct Config {
+    /// The sampling interval of power and temperature profiles in seconds.
+    pub time_step: f64,
+    /// The temperature of the ambience in Celsius or Kelvin.
+    pub ambience: f64,
+}
+
 /// An error.
 #[derive(Debug)]
 pub struct Error(String);
@@ -139,33 +139,21 @@ pub struct Error(String);
 /// A result.
 pub type Result<T> = std::result::Result<T, Error>;
 
-impl fmt::Display for Error {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        self.0.fmt(formatter)
-    }
-}
-
-impl error::Error for Error {
-    fn description(&self) -> &str {
-        &self.0
-    }
-}
-
 impl Analysis {
     /// Set up the analysis for a particular problem.
     #[allow(non_snake_case)]
-    pub fn new(circuit: Circuit, config: Config) -> Result<Analysis> {
+    pub fn new<T: Circuit>(circuit: T, config: Config) -> Result<Analysis> {
         use linear::multiply;
         use linear::symmetric_eigen;
 
-        let (nc, nn) = (circuit.cores, circuit.nodes);
+        let (nc, nn) = (circuit.cores(), circuit.nodes());
 
-        let mut D = circuit.capacitance; // recycle
+        let mut D = circuit.capacitance();
         for i in (0..nn) {
             D[i] = (1.0 / D[i]).sqrt();
         }
 
-        let mut A = circuit.conductance; // recycle
+        let mut A = circuit.conductance();
         for i in (0..nn) {
             for j in (0..nn) {
                 A[j * nn + i] = -1.0 * D[i] * D[j] * A[j * nn + i];
@@ -264,6 +252,18 @@ impl Analysis {
                 Q[nc * j + i] = D[i] * S[nn * j + i] + ambience;
             }
         }
+    }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(formatter)
+    }
+}
+
+impl error::Error for Error {
+    fn description(&self) -> &str {
+        &self.0
     }
 }
 

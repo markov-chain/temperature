@@ -4,7 +4,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use temperature::Analysis;
-use temperature::model::hotspot;
+use temperature::model::HotSpot;
 
 mod fixture;
 
@@ -26,7 +26,7 @@ fn compute_transient() {
 }
 
 pub fn setup(name: &str) -> Analysis {
-    let circuit = hotspot::new(&find(&format!("{}.flp", name)), &find("hotspot.config"), "");
+    let circuit = HotSpot::new(find(&format!("{}.flp", name)), find("hotspot.config"));
     Analysis::new(circuit.unwrap(), Default::default()).unwrap()
 }
 

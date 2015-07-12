@@ -4,7 +4,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use Analysis;
-use model::hotspot;
+use model::HotSpot;
 
 mod fixture;
 
@@ -23,7 +23,7 @@ fn new() {
 }
 
 pub fn setup(name: &str) -> Analysis {
-    let circuit = hotspot::new(&find(&format!("{}.flp", name)), &find("hotspot.config"), "");
+    let circuit = HotSpot::new(find(&format!("{}.flp", name)), find("hotspot.config"));
     Analysis::new(circuit.unwrap(), Default::default()).unwrap()
 }
 

@@ -1,4 +1,7 @@
 //! Models for the construction of thermal RC circuits.
 
 #[cfg(feature = "hotspot")]
-pub mod hotspot;
+mod hotspot;
+
+#[cfg(feature = "hotspot")]
+pub use self::hotspot::HotSpot;

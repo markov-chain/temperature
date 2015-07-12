@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use test::Bencher;
 
 use temperature::Analysis;
-use temperature::model::hotspot;
+use temperature::model::HotSpot;
 
 #[bench]
 #[allow(non_snake_case)]
@@ -24,7 +24,7 @@ fn compute_transient(bench: &mut Bencher) {
 }
 
 pub fn setup(name: &str) -> Analysis {
-    let circuit = hotspot::new(&find(&format!("{}.flp", name)), &find("hotspot.config"), "");
+    let circuit = HotSpot::new(find(&format!("{}.flp", name)), find("hotspot.config"));
     Analysis::new(circuit.unwrap(), Default::default()).unwrap()
 }
 

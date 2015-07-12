@@ -1,24 +1,51 @@
-//! The HotSpot model.
+//! The [HotSpot][1] model.
+//!
+//! [1]: http://lava.cs.virginia.edu/HotSpot
 
 extern crate hotspot;
 
-use std::io::Result;
 use std::path::Path;
 
-use Circuit;
+use {Circuit, Error, Result};
 
 #[cfg(test)]
 mod tests;
 
-/// Construct a thermal RC circuit using the HotSpot model.
-pub fn new(floorplan: &Path, config: &Path, params: &str) -> Result<Circuit> {
-    let hotspot::Circuit { cores, nodes, capacitance, conductance } = {
-        try!(hotspot::Circuit::new(floorplan, config, &params))
-    };
-    Ok(Circuit {
-        cores: cores,
-        nodes: nodes,
-        capacitance: capacitance,
-        conductance: conductance,
-    })
+/// A thermal circuit based on HotSpot.
+pub struct HotSpot {
+    backend: hotspot::Circuit,
+}
+
+impl HotSpot {
+    /// Construct a thermal circuit.
+    pub fn new<F: AsRef<Path>, C: AsRef<Path>>(floorplan: F, config: C) -> Result<HotSpot> {
+        Ok(HotSpot {
+            backend: match hotspot::Circuit::new(floorplan, config) {
+                Ok(backend) => backend,
+                Err(error) => return Err(Error(error.to_string())),
+            },
+        })
+    }
+}
+
+impl Circuit for HotSpot {
+    #[inline]
+    fn cores(&self) -> usize {
+        self.backend.cores
+    }
+
+    #[inline]
+    fn nodes(&self) -> usize {
+        self.backend.nodes
+    }
+
+    #[inline]
+    fn capacitance(&self) -> Vec<f64> {
+        self.backend.capacitance.clone()
+    }
+
+    #[inline]
+    fn conductance(&self) -> Vec<f64> {
+        self.backend.conductance.clone()
+    }
 }
