@@ -8,9 +8,6 @@ use std::path::Path;
 
 use {Circuit, Error, Result};
 
-#[cfg(test)]
-mod tests;
-
 /// A thermal circuit based on HotSpot.
 pub struct HotSpot {
     backend: hotspot::Circuit,

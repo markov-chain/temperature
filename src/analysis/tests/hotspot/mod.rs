@@ -3,7 +3,7 @@ use std::default::Default;
 use std::fs;
 use std::path::PathBuf;
 
-use Analysis;
+use analysis::Analysis;
 use model::HotSpot;
 
 mod fixture;
