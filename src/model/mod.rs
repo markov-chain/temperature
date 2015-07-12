@@ -1,4 +1,4 @@
-//! Models for the construction of thermal RC circuits.
+//! Models for the construction of thermal circuits.
 
 #[cfg(feature = "hotspot")]
 mod hotspot;

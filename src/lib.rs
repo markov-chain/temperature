@@ -4,10 +4,10 @@
 //!
 //! Temperature analysis is based on the well-known analogy between electrical
 //! and thermal circuits. For an electronic system of interest, an equivalent
-//! thermal RC circuit is constructed. The circuit is composed of `nodes`
-//! thermal nodes. A subset of `cores` (out of `nodes`) thermal nodes
-//! corresponds to the power-dissipating elements of the electronic system and
-//! is referred to as active.
+//! thermal circuit is constructed. The circuit is composed of `nodes` thermal
+//! nodes. A subset of `cores` (out of `nodes`) thermal nodes corresponds to the
+//! power-dissipating elements of the electronic system and is referred to as
+//! active.
 //!
 //! The thermal behavior of the electronic system is modeled using the following
 //! system of differential-algebraic equations:
@@ -96,7 +96,7 @@ pub mod model;
 
 pub use analysis::Analysis;
 
-/// A thermal RC circuit.
+/// A thermal circuit.
 pub trait Circuit {
     /// The number of active thermal nodes.
     fn cores(&self) -> usize;
