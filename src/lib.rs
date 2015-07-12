@@ -94,9 +94,6 @@ use std::{error, fmt};
 
 pub mod model;
 
-#[cfg(test)]
-mod tests;
-
 /// Temperature analysis.
 pub struct Analysis {
     config: Config,

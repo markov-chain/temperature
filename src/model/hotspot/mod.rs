@@ -7,6 +7,9 @@ use std::path::Path;
 
 use Circuit;
 
+#[cfg(test)]
+mod tests;
+
 /// Construct a thermal RC circuit using the HotSpot model.
 pub fn new(floorplan: &Path, config: &Path, params: &str) -> Result<Circuit> {
     let hotspot::Circuit { cores, nodes, capacitance, conductance } = {

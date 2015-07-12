@@ -8,12 +8,14 @@ homepage = "https://github.com/markov-chain/temperature"
 documentation = "https://markov-chain.github.io/temperature"
 description = """
 The package provides an exponential-integrator-based solver for systems of
-differential-algebraic equations modeling temperature of electronic systems.
-"""
+differential-algebraic equations modeling temperature of electronic systems."""
 
 [dependencies]
-hotspot = "*"
 linear = "*"
+
+[dependencies.hotspot]
+version = "*"
+optional = true
 
 [dev-dependencies]
 assert = "*"
