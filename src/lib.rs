@@ -2,14 +2,15 @@
 //!
 //! ## Model
 //!
-//! Temperature analysis is based on the well-known analogy between electrical and thermal
-//! circuits. For an electronic system of interest, an equivalent thermal RC circuit is
-//! constructed. The circuit is composed of `nodes` thermal nodes. A subset of `cores` (out of
-//! `nodes`) thermal nodes corresponds to the power-dissipating elements of the electronic system
-//! and is referred to as active.
+//! Temperature analysis is based on the well-known analogy between electrical
+//! and thermal circuits. For an electronic system of interest, an equivalent
+//! thermal RC circuit is constructed. The circuit is composed of `nodes`
+//! thermal nodes. A subset of `cores` (out of `nodes`) thermal nodes
+//! corresponds to the power-dissipating elements of the electronic system and
+//! is referred to as active.
 //!
-//! The thermal behavior of the electronic system is modeled using the following system of
-//! differential-algebraic equations:
+//! The thermal behavior of the electronic system is modeled using the following
+//! system of differential-algebraic equations:
 //!
 //! ```math
 //!     dQall
@@ -23,7 +24,8 @@
 //!
 //! * `C` is an `nodes`-by-`nodes` diagonal matrix of thermal capacitance;
 //!
-//! * `G` is an `nodes`-by-`nodes` symmetric, positive-definite matrix of thermal conductance;
+//! * `G` is an `nodes`-by-`nodes` symmetric, positive-definite matrix of
+//!   thermal conductance;
 //!
 //! * `Qall` is an `nodes`-element temperature vector of all thermal nodes;
 //!
@@ -33,8 +35,8 @@
 //!
 //! * `P` is a `cores`-element power vector of the active thermal nodes; and
 //!
-//! * `M` is an `nodes`-by-`cores` rectangular diagonal matrix whose diagonal elements equal to
-//!   unity.
+//! * `M` is an `nodes`-by-`cores` rectangular diagonal matrix whose diagonal
+//!   elements equal to unity.
 //!
 //! ## Solution
 //!
@@ -63,8 +65,8 @@
 //! A = U * diag(Λ) * U^T.
 //! ```
 //!
-//! The solution of the system for a short time interval `[0, Δt]` is based on the following
-//! equation:
+//! The solution of the system for a short time interval `[0, Δt]` is based on
+//! the following equation:
 //!
 //! ```math
 //! S(t) = E * S(0) + F * P(0)
@@ -78,9 +80,10 @@
 //!   = U * diag((exp(λi * Δt) - 1) / λi) * U^T * B.
 //! ```
 //!
-//! `Δt` is referred to as the time step. In order to find the temperature profile corresponding to
-//! the whole time span of interest, the time span is split into small intervals, and the above
-//! equation is successively applied to each of these small intervals.
+//! `Δt` is referred to as the time step. In order to find the temperature
+//! profile corresponding to the whole time span of interest, the time span is
+//! split into small intervals, and the above equation is successively applied
+//! to each of these small intervals.
 
 #[cfg(test)]
 extern crate assert;
@@ -114,7 +117,7 @@ pub struct Circuit {
 pub struct Config {
     /// The sampling interval of power and temperature profiles in seconds.
     pub time_step: f64,
-    /// The temperature of the ambience in Kelvin.
+    /// The temperature of the ambience in Celsius or Kelvin.
     pub ambience: f64,
 }
 
@@ -207,14 +210,15 @@ impl Analysis {
     ///
     /// * `P` is an input power profile given as a `cores`-by-`steps` matrix;
     ///
-    /// * `Q` is the corresponding output temperature profile given as a `cores`-by-`steps` matrix;
+    /// * `Q` is the corresponding output temperature profile given as a
+    ///   `cores`-by-`steps` matrix;
     ///
     /// * `S` is an `nodes`-by-`steps` matrix for the internal usage; and
     ///
     /// * `steps` is the number of time steps; see `time_step` in `Config`.
     ///
-    /// The structure of the arguments allows one to avoid repetitive memory allocation if the
-    /// analysis is to be performed several times.
+    /// The structure of the arguments allows one to avoid repetitive memory
+    /// allocation if the analysis is to be performed several times.
     #[allow(non_snake_case)]
     pub fn compute_transient(&self, P: &[f64], Q: &mut [f64], S: &mut [f64], steps: usize) {
         use linear::multiply;
