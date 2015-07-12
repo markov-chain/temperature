@@ -86,7 +86,6 @@
 extern crate assert;
 
 extern crate linear;
-extern crate num;
 
 pub mod model;
 
@@ -137,7 +136,6 @@ impl Analysis {
     pub fn new(circuit: Circuit, config: Config) -> Result<Analysis, &'static str> {
         use linear::multiply;
         use linear::symmetric_eigen;
-        use num::traits::Float;
 
         let (nc, nn) = (circuit.cores, circuit.nodes);
 
