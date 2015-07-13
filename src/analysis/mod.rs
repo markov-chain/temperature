@@ -32,13 +32,13 @@ impl Analysis {
         let (nc, nn) = (circuit.cores, circuit.nodes);
 
         let mut D: Vec<_> = circuit.capacitance.clone().into();
-        for i in (0..nn) {
+        for i in 0..nn {
             D[i] = (1.0 / D[i]).sqrt();
         }
 
         let mut A: Vec<_> = Dense::from(&circuit.conductance).into();
-        for i in (0..nn) {
-            for j in (0..nn) {
+        for i in 0..nn {
+            for j in 0..nn {
                 A[j * nn + i] = -1.0 * D[i] * D[j] * A[j * nn + i];
             }
         }
@@ -54,11 +54,11 @@ impl Analysis {
         let mut temp1 = vec![0.0; nn];
         let mut temp2 = vec![0.0; nn * nn];
 
-        for i in (0..nn) {
+        for i in 0..nn {
             temp1[i] = (dt * L[i]).exp();
         }
-        for i in (0..nn) {
-            for j in (0..nn) {
+        for i in 0..nn {
+            for j in 0..nn {
                 temp2[j * nn + i] = temp1[i] * U[i * nn + j];
             }
         }
@@ -66,11 +66,11 @@ impl Analysis {
         let mut E = vec![0.0; nn * nn];
         multiply(1.0, &U, &temp2, 1.0, &mut E, nn);
 
-        for i in (0..nn) {
+        for i in 0..nn {
             temp1[i] = (temp1[i] - 1.0) / L[i];
         }
-        for i in (0..nn) {
-            for j in (0..nc) {
+        for i in 0..nn {
+            for j in 0..nc {
                 temp2[j * nn + i] = temp1[i] * U[i * nn + j] * D[j];
             }
         }
@@ -80,15 +80,7 @@ impl Analysis {
 
         Ok(Analysis {
             config: *config,
-            system: System {
-                cores: nc,
-                nodes: nn,
-                L: L,
-                U: U,
-                D: D,
-                E: E,
-                F: F,
-            },
+            system: System { cores: nc, nodes: nn, L: L, U: U, D: D, E: E, F: F },
         })
     }
 
@@ -96,12 +88,12 @@ impl Analysis {
     ///
     /// ## Arguments
     ///
-    /// * `P` is an input power profile given as a `cores`-by-`steps` matrix;
+    /// * `P` is an input power profile given as a `cores × steps` matrix;
     ///
     /// * `Q` is the corresponding output temperature profile given as a
-    ///   `cores`-by-`steps` matrix;
+    ///   `cores × steps` matrix;
     ///
-    /// * `S` is an `nodes`-by-`steps` matrix for the internal usage; and
+    /// * `S` is an `nodes × steps` matrix for the internal usage; and
     ///
     /// * `steps` is the number of time steps; see `time_step` in `Config`.
     ///
@@ -124,14 +116,14 @@ impl Analysis {
         // `S` and overwrite them with new data. Let us be efficient.
         let Z: &mut [f64] = unsafe { transmute_copy(&S) };
 
-        for i in (1..steps) {
+        for i in 1..steps {
             let (j, k) = ((i - 1) * nn, i * nn);
-            multiply(1.0, E, &S[j..k], 1.0, &mut Z[k..k + nn], nn);
+            multiply(1.0, E, &S[j..k], 1.0, &mut Z[k..(k + nn)], nn);
         }
 
         let ambience = self.config.ambience;
-        for i in (0..nc) {
-            for j in (0..steps) {
+        for i in 0..nc {
+            for j in 0..steps {
                 Q[nc * j + i] = D[i] * S[nn * j + i] + ambience;
             }
         }
