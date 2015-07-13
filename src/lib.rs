@@ -22,10 +22,10 @@
 //!
 //! where
 //!
-//! * `C` is an `nodes`-by-`nodes` diagonal matrix of thermal capacitance;
+//! * `C` is an `nodes × nodes` diagonal matrix of thermal capacitance;
 //!
-//! * `G` is an `nodes`-by-`nodes` symmetric, positive-definite matrix of
-//!   thermal conductance;
+//! * `G` is an `nodes × nodes` symmetric, positive-definite matrix of thermal
+//!   conductance;
 //!
 //! * `Qall` is an `nodes`-element temperature vector of all thermal nodes;
 //!
@@ -35,7 +35,7 @@
 //!
 //! * `P` is a `cores`-element power vector of the active thermal nodes; and
 //!
-//! * `M` is an `nodes`-by-`cores` rectangular diagonal matrix whose diagonal
+//! * `M` is an `nodes × cores` rectangular diagonal matrix whose diagonal
 //!   elements equal to unity.
 //!
 //! ## Solution
@@ -88,27 +88,24 @@
 #[cfg(test)]
 extern crate assert;
 extern crate linear;
+extern crate matrix;
 
 use std::{error, fmt};
 
-mod analysis;
-pub mod model;
-
-pub use analysis::Analysis;
-
 /// A thermal circuit.
-pub trait Circuit {
-    /// The number of active thermal nodes.
-    fn cores(&self) -> usize;
-    /// The number of all thermal nodes.
-    fn nodes(&self) -> usize;
-    /// An `nodes`-element vector of thermal capacitance.
-    fn capacitance(&self) -> Vec<f64>;
-    /// An `nodes`-by-`nodes` matrix of thermal conductance.
-    fn conductance(&self) -> Vec<f64>;
+pub struct Circuit {
+    /// The number of processing elements.
+    pub cores: usize,
+    /// The number of thermal nodes.
+    pub nodes: usize,
+    /// The thermal capacitance matrix.
+    pub capacitance: matrix::Diagonal<f64>,
+    /// The thermal conductance matrix.
+    pub conductance: matrix::Compressed<f64>,
 }
 
 /// A configuration of temperature analysis.
+#[derive(Clone, Copy, Debug)]
 pub struct Config {
     /// The sampling interval of power and temperature profiles in seconds.
     pub time_step: f64,
@@ -122,6 +119,15 @@ pub struct Error(String);
 
 /// A result.
 pub type Result<T> = std::result::Result<T, Error>;
+
+macro_rules! ok(
+    ($result:expr) => (
+        match $result {
+            Ok(result) => result,
+            Err(error) => return Err(::Error(error.to_string())),
+        }
+    );
+);
 
 impl fmt::Display for Error {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -144,3 +150,8 @@ impl std::default::Default for Config {
         }
     }
 }
+
+mod analysis;
+pub mod model;
+
+pub use analysis::Analysis;

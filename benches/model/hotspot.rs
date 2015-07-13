@@ -25,7 +25,7 @@ fn compute_transient(bench: &mut Bencher) {
 
 pub fn setup(name: &str) -> Analysis {
     let circuit = HotSpot::new(find(&format!("{}.flp", name)), find("hotspot.config"));
-    Analysis::new(circuit.unwrap(), Default::default()).unwrap()
+    Analysis::new(&circuit.unwrap(), &Default::default()).unwrap()
 }
 
 fn find(name: &str) -> PathBuf {

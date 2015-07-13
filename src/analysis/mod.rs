@@ -24,18 +24,19 @@ struct System {
 impl Analysis {
     /// Set up the analysis for a particular problem.
     #[allow(non_snake_case)]
-    pub fn new<T: Circuit>(circuit: T, config: Config) -> Result<Analysis> {
+    pub fn new(circuit: &Circuit, config: &Config) -> Result<Analysis> {
         use linear::multiply;
         use linear::symmetric_eigen;
+        use matrix::Dense;
 
-        let (nc, nn) = (circuit.cores(), circuit.nodes());
+        let (nc, nn) = (circuit.cores, circuit.nodes);
 
-        let mut D = circuit.capacitance();
+        let mut D: Vec<_> = circuit.capacitance.clone().into();
         for i in (0..nn) {
             D[i] = (1.0 / D[i]).sqrt();
         }
 
-        let mut A = circuit.conductance();
+        let mut A: Vec<_> = Dense::from(&circuit.conductance).into();
         for i in (0..nn) {
             for j in (0..nn) {
                 A[j * nn + i] = -1.0 * D[i] * D[j] * A[j * nn + i];
@@ -78,7 +79,7 @@ impl Analysis {
         multiply(1.0, &U, &temp2[..(nn * nc)], 1.0, &mut F, nn);
 
         Ok(Analysis {
-            config: config,
+            config: *config,
             system: System {
                 cores: nc,
                 nodes: nn,
