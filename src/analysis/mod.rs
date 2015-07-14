@@ -4,7 +4,7 @@ use linear;
 use matrix;
 use std::{mem, ptr};
 
-use {Circuit, Config, Error, Result};
+use {Circuit, Config, Result};
 
 #[cfg(test)]
 mod tests;
@@ -15,17 +15,12 @@ pub struct Analysis {
     system: System,
 }
 
-#[allow(dead_code)]
 struct System {
     cores: usize,
     nodes: usize,
-
-    U: Vec<f64>,
-    L: Vec<f64>,
     D: Vec<f64>,
     E: Vec<f64>,
     F: Vec<f64>,
-
     S: Vec<f64>,
 }
 
@@ -42,50 +37,41 @@ impl Analysis {
         let mut A: Vec<_> = matrix::Dense::from(conductance).into();
         for i in 0..nodes {
             for j in 0..nodes {
-                A[j * nodes + i] = -1.0 * D[i] * D[j] * A[j * nodes + i];
+                A[j * nodes + i] = -D[i] * D[j] * A[j * nodes + i];
             }
         }
 
-        let mut U = A; // recycle
+        let mut U = A;
         let mut L = vec![0.0; nodes];
-        if let Err(error) = linear::symmetric_eigen(&mut U, &mut L) {
-            return Err(Error(error.to_string()));
-        }
+        ok!(linear::symmetric_eigen(&mut U, &mut L));
 
-        let dt = config.time_step;
-
-        let mut T1 = vec![0.0; nodes];
-        let mut T2 = vec![0.0; nodes * nodes];
+        let mut T = vec![0.0; nodes * nodes];
 
         for i in 0..nodes {
-            T1[i] = (dt * L[i]).exp();
-        }
-        for i in 0..nodes {
+            let factor = (config.time_step * L[i]).exp();
             for j in 0..nodes {
-                T2[j * nodes + i] = T1[i] * U[i * nodes + j];
+                T[j * nodes + i] = factor * U[i * nodes + j];
             }
         }
 
         let mut E = vec![0.0; nodes * nodes];
-        linear::multiply(1.0, &U, &T2, 1.0, &mut E, nodes);
+        linear::multiply(1.0, &U, &T, 1.0, &mut E, nodes);
 
         for i in 0..nodes {
-            T1[i] = (T1[i] - 1.0) / L[i];
-        }
-        for i in 0..nodes {
+            let factor = ((config.time_step * L[i]).exp() - 1.0) / L[i];
             for j in 0..cores {
-                T2[j * nodes + i] = T1[i] * U[i * nodes + j] * D[j];
+                T[j * nodes + i] = factor * U[i * nodes + j] * D[j];
             }
         }
 
-        let mut F = vec![0.0; nodes * cores];
-        linear::multiply(1.0, &U, &T2[..(nodes * cores)], 1.0, &mut F, nodes);
+        let mut F: Vec<_> = vec![0.0; nodes * cores];
+        linear::multiply(1.0, &U, &T[..(nodes * cores)], 1.0, &mut F, nodes);
 
         Ok(Analysis {
             config: *config,
             system: System {
                 cores: cores, nodes: nodes,
-                L: L, U: U, D: D, E: E, F: F,
+                D: D, E: E, F: F,
                 S: vec![0.0; 2 * nodes],
             },
         })
