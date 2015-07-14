@@ -3,87 +3,94 @@
 //! ## Model
 //!
 //! Temperature analysis is based on the well-known analogy between electrical
-//! and thermal circuits. For an electronic system of interest, an equivalent
-//! thermal circuit is constructed. The circuit is composed of `nodes` thermal
-//! nodes. A subset of `cores` (out of `nodes`) thermal nodes corresponds to the
-//! power-dissipating elements of the electronic system and is referred to as
-//! active.
+//! and thermal circuits. For an electronic system with `cores` processing
+//! elements, an equivalent thermal circuit is constructed, which is composed of
+//! `nodes` thermal nodes.
 //!
-//! The thermal behavior of the electronic system is modeled using the following
-//! system of differential-algebraic equations:
+//! The thermal behavior of the system is modeled using the following system of
+//! differential-algebraic equations:
 //!
 //! ```math
-//!     dQall
-//! C * ----- + G * (Qall - Qamb) = M * P
-//!      dt
+//!     dT
+//! Cth -- + Gth (T - Tamb) = Mp P
+//!     dt
 //!
-//! Q = M^T * Qall
+//! Q = Mq T
 //! ```
 //!
 //! where
 //!
-//! * `C` is an `nodes × nodes` diagonal matrix of thermal capacitance;
+//! * `Cth` is the thermal-capacitance matrix, which is a `nodes × nodes`
+//!   diagonal matrix;
 //!
-//! * `G` is an `nodes × nodes` symmetric, positive-definite matrix of thermal
-//!   conductance;
+//! * `Gth` is the thermal-conductance matrix, which is a `nodes × nodes`
+//!   symmetric, positive-definite matrix;
 //!
-//! * `Qall` is an `nodes`-element temperature vector of all thermal nodes;
+//! * `T` is the temperature of the thermal nodes, which is a `nodes`-element
+//!   vector;
 //!
-//! * `Q` is a `cores`-element temperature vector of the active thermal nodes;
+//! * `Tamb` is the ambient temperature, which is a `nodes`-element vector;
 //!
-//! * `Qamb` is a `cores`-element temperature vector of the ambience;
+//! * `P` is the power dissipation of the processing elements, which is a
+//!   `cores`-element vector;
 //!
-//! * `P` is a `cores`-element power vector of the active thermal nodes; and
+//! * `Mp` is the distribution matrix mapping the power dissipation of the
+//!   processing elements onto the thermal nodes, which is a `nodes × cores`
+//!   matrix;
 //!
-//! * `M` is an `nodes × cores` rectangular diagonal matrix whose diagonal
-//!   elements equal to unity.
+//! * `Q` is the temperature of interest, which is an `outputs`-element vector;
+//!
+//! * `Mq` is the aggregation matrix mapping the temperature of the thermal
+//!   nodes onto the temperature of interest, which is an `outputs × nodes`
+//!   matrix.
 //!
 //! ## Solution
 //!
-//! The original thermal system is transformed as follows:
+//! The system is transformed as follows:
 //!
 //! ```math
 //! dS
-//! -- = A * S + B * P
+//! -- = A S + B P
 //! dt
 //!
-//! Q = B^T * S + Qamb
+//! Q = C S + Mq Tamb
 //! ```
 //!
 //! where
 //!
 //! ```math
-//! S = D^(-1) * (Qall - Qamb),
-//! A = -D * G * D,
-//! B = D * M, and
-//! D = C^(-1/2).
+//! S = D^(-1) (T - Tamb),
+//! A = -D Gth D,
+//! B = D Mp,
+//! C = Mq D, and
+//! D = Cth^(-1/2).
 //! ```
 //!
 //! The eigendecomposition of `A`, which is real and symmetric, is
 //!
 //! ```math
-//! A = U * diag(Λ) * U^T.
+//! A = U diag(Λ) U^T.
 //! ```
 //!
-//! The solution of the system for a short time interval `[0, Δt]` is based on
-//! the following equation:
+//! For a short time interval `[0, Δt]`, the solution is obtained using the
+//! following equation:
 //!
 //! ```math
-//! S(t) = E * S(0) + F * P(0)
+//! S(t) = E S(0) + F P(0)
 //! ```
 //!
 //! where
 //!
 //! ```math
-//! E = exp(A * Δt) = U * diag(exp(λi * Δt)) * U^T and
-//! F = A^(-1) * (exp(A * Δt) - I) * B
-//!   = U * diag((exp(λi * Δt) - 1) / λi) * U^T * B.
+//! E = exp(A Δt) = U diag(exp(λi Δt)) U^T and
+//! F = A^(-1) (exp(A Δt) - I) B = U diag((exp(λi Δt) - 1) / λi) U^T B.
 //! ```
 //!
-//! `Δt` is referred to as the time step. In order to find the temperature
-//! profile corresponding to the whole time span of interest, the time span is
-//! split into small intervals, and the above equation is successively applied
-//! to each of these small intervals.
+//! The solution makes use of the assumption that `Δt` is short enough so that
+//! the power dissipation does not change much within `[0, Δt]`. In order to
+//! compute the temperature profile corresponding for the whole time span of
+//! interest, the time span is split into small subintervals, and the above
+//! equation is successively applied to each of them.
 
 #[cfg(test)]
 extern crate assert;
