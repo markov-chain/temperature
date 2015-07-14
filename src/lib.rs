@@ -107,10 +107,10 @@ pub struct Circuit {
 /// A configuration of temperature analysis.
 #[derive(Clone, Copy, Debug)]
 pub struct Config {
-    /// The sampling interval of power and temperature profiles in seconds.
-    pub time_step: f64,
     /// The temperature of the ambience in Celsius or Kelvin.
     pub ambience: f64,
+    /// The sampling interval of power and temperature profiles in seconds.
+    pub time_step: f64,
 }
 
 /// An error.
@@ -145,8 +145,8 @@ impl std::default::Default for Config {
     #[inline]
     fn default() -> Config {
         Config {
-            time_step: 1e-3,
             ambience: 318.15,
+            time_step: 1e-3,
         }
     }
 }

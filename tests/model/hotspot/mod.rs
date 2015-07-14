@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 use assert;
 use std::default::Default;
 use std::fs;
@@ -9,19 +11,35 @@ use temperature::model::HotSpot;
 mod fixture;
 
 #[test]
-#[allow(non_snake_case)]
-fn compute_transient() {
-    let analysis = setup("002");
+fn step_1() {
+    let cores = 2;
+    let mut analysis = setup("002");
+    let mut Q = vec![0.0; cores];
+    for i in 0..440 {
+        let range = (i * cores)..((i + 1) * cores);
+        analysis.step(&fixture::P[range.clone()], &mut Q);
+        assert::close(&Q, &fixture::Q[range], 1e-12);
+    }
+}
 
-    let nc = 2;
-    let nn = 4 * nc + 12;
-    let ns = fixture::P.len() / nc;
+#[test]
+fn step_2() {
+    let cores = 2;
+    let mut analysis = setup("002");
+    let mut Q = vec![0.0; 2 * cores];
+    for i in 0..220 {
+        let range = (2 * i * cores)..(2 * (i + 1) * cores);
+        analysis.step(&fixture::P[range.clone()], &mut Q);
+        assert::close(&Q, &fixture::Q[range], 1e-12);
+    }
+}
 
-    let mut Q = vec![0.0; nc * ns];
-    let mut S = vec![0.0; nn * ns];
-
-    analysis.compute_transient(&fixture::P, &mut Q, &mut S, ns);
-
+#[test]
+fn step_440() {
+    let cores = 2;
+    let mut analysis = setup("002");
+    let mut Q = vec![0.0; 440 * cores];
+    analysis.step(&fixture::P, &mut Q);
     assert::close(&Q, &fixture::Q[..], 1e-12);
 }
 
