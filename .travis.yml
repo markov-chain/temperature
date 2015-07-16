@@ -11,7 +11,7 @@ script:
   - cargo test --verbose --features "hotspot threed-ice"
 
 after_success:
-  - curl https://markov-chain.github.io/travis/after_success.sh | CARGO_FLAGS='--features "hotspot threed-ice"' bash
+  - curl https://markov-chain.github.io/travis/after_success.sh | CARGO_FLAGS='--features \"hotspot threed-ice\"' bash
 
 env:
   global:
