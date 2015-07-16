@@ -109,6 +109,8 @@ pub struct Circuit {
     pub capacitance: matrix::Diagonal<f64>,
     /// The thermal conductance matrix.
     pub conductance: matrix::Compressed<f64>,
+    /// The power distribution matrix.
+    pub distribution: matrix::Compressed<f64>,
 }
 
 /// A configuration of temperature analysis.

@@ -27,7 +27,9 @@ struct System {
 impl Analysis {
     /// Set up the analysis for a particular problem.
     pub fn new(circuit: &Circuit, config: &Config) -> Result<Analysis> {
-        let &Circuit { cores, nodes, ref capacitance, ref conductance, .. } = circuit;
+        let &Circuit {
+            cores, nodes, ref capacitance, ref conductance, ref distribution, ..
+        } = circuit;
 
         let mut D: Vec<_> = capacitance.clone().into();
         for i in 0..nodes {
@@ -45,27 +47,29 @@ impl Analysis {
         let mut L = vec![0.0; nodes];
         ok!(linear::symmetric_eigen(&mut U, &mut L));
 
-        let mut T = vec![0.0; nodes * nodes];
+        let mut T1 = vec![0.0; nodes * nodes];
+        let mut T2 = vec![0.0; nodes * nodes];
+
+        for i in 0..nodes {
+            let factor = ((config.time_step * L[i]).exp() - 1.0) / L[i];
+            for j in 0..nodes {
+                T1[j * nodes + i] = factor * U[i * nodes + j] * D[j];
+            }
+        }
+
+        let mut F: Vec<_> = matrix::Dense::from(distribution).into();
+        linear::multiply(1.0, &T1, &F, 0.0, &mut T2[..(nodes * cores)], nodes);
+        linear::multiply(1.0, &U, &T2[..(nodes * cores)], 0.0, &mut F, nodes);
 
         for i in 0..nodes {
             let factor = (config.time_step * L[i]).exp();
             for j in 0..nodes {
-                T[j * nodes + i] = factor * U[i * nodes + j];
+                T1[j * nodes + i] = factor * U[i * nodes + j];
             }
         }
 
-        let mut E = vec![0.0; nodes * nodes];
-        linear::multiply(1.0, &U, &T, 1.0, &mut E, nodes);
-
-        for i in 0..nodes {
-            let factor = ((config.time_step * L[i]).exp() - 1.0) / L[i];
-            for j in 0..cores {
-                T[j * nodes + i] = factor * U[i * nodes + j] * D[j];
-            }
-        }
-
-        let mut F: Vec<_> = vec![0.0; nodes * cores];
-        linear::multiply(1.0, &U, &T[..(nodes * cores)], 1.0, &mut F, nodes);
+        let mut E = T2;
+        linear::multiply(1.0, &U, &T1, 0.0, &mut E, nodes);
 
         Ok(Analysis {
             config: *config,
