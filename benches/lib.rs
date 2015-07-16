@@ -4,4 +4,5 @@ extern crate random;
 extern crate temperature;
 extern crate test;
 
-mod model;
+#[cfg(feature = "hotspot")]
+mod hotspot;

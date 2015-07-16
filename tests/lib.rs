@@ -1,4 +1,5 @@
 extern crate assert;
 extern crate temperature;
 
-mod model;
+#[cfg(feature = "hotspot")]
+mod hotspot;

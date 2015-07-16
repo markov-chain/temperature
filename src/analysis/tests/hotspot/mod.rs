@@ -4,7 +4,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use analysis::Analysis;
-use model::HotSpot;
+use circuit::HotSpot;
 
 mod fixture;
 
@@ -26,7 +26,7 @@ pub fn setup(name: &str) -> Analysis {
 }
 
 fn find(name: &str) -> PathBuf {
-    let path = PathBuf::from("tests/model/hotspot/fixtures").join(name);
+    let path = PathBuf::from("tests/hotspot/fixtures").join(name);
     assert!(fs::metadata(&path).is_ok());
     path
 }

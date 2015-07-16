@@ -6,7 +6,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use temperature::Analysis;
-use temperature::model::HotSpot;
+use temperature::circuit::HotSpot;
 
 mod fixture;
 
@@ -49,7 +49,7 @@ pub fn setup(name: &str) -> Analysis {
 }
 
 fn find(name: &str) -> PathBuf {
-    let path = PathBuf::from("tests/model/hotspot/fixtures").join(name);
+    let path = PathBuf::from("tests/hotspot/fixtures").join(name);
     assert!(fs::metadata(&path).is_ok());
     path
 }

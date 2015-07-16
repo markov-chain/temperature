@@ -25,3 +25,7 @@ optional = true
 [dev-dependencies]
 assert = "*"
 random = "*"
+
+[[bench]]
+name = "temperature"
+path = "benches/lib.rs"

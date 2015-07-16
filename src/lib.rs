@@ -161,6 +161,6 @@ impl std::default::Default for Config {
 }
 
 mod analysis;
-pub mod model;
+pub mod circuit;
 
 pub use analysis::Analysis;
