@@ -25,7 +25,7 @@ struct System {
 }
 
 impl Analysis {
-    /// Set up the analysis for a particular problem.
+    /// Set up the analysis.
     pub fn new(circuit: &Circuit, config: &Config) -> Result<Analysis> {
         let &Circuit {
             cores, nodes, ref capacitance, ref conductance, ref distribution, ..
@@ -81,7 +81,7 @@ impl Analysis {
         })
     }
 
-    /// Perform temperature analysis.
+    /// Perform the analysis.
     pub fn step(&mut self, P: &[f64], Q: &mut [f64]) {
         let Config { ambience, .. } = self.config;
         let System { cores, nodes, ref D, ref E, ref F, ref mut S, .. } = self.system;
