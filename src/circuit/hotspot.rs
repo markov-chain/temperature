@@ -15,8 +15,6 @@ impl HotSpot {
             ok!(hotspot::Circuit::new(floorplan, config))
         };
         Ok(Circuit {
-            cores: cores,
-            nodes: nodes,
             capacitance: capacitance,
             conductance: conductance,
             distribution: Compressed::from(Diagonal::from_vec(vec![1.0; cores], (nodes, cores))),

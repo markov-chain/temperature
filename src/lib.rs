@@ -101,10 +101,6 @@ use std::{error, fmt};
 
 /// A thermal circuit.
 pub struct Circuit {
-    /// The number of processing elements.
-    pub cores: usize,
-    /// The number of thermal nodes.
-    pub nodes: usize,
     /// The thermal capacitance matrix.
     pub capacitance: matrix::Diagonal<f64>,
     /// The thermal conductance matrix.

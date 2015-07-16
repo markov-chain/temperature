@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 use linear;
-use matrix;
+use matrix::{Dense, Size};
 use std::{mem, ptr};
 
 use {Circuit, Config, Result};
@@ -27,16 +27,15 @@ struct System {
 impl Analysis {
     /// Set up the analysis.
     pub fn new(circuit: &Circuit, config: &Config) -> Result<Analysis> {
-        let &Circuit {
-            cores, nodes, ref capacitance, ref conductance, ref distribution, ..
-        } = circuit;
+        let &Circuit { ref capacitance, ref conductance, ref distribution, .. } = circuit;
+        let (nodes, cores) = distribution.dimensions();
 
         let mut D: Vec<_> = capacitance.clone().into();
         for i in 0..nodes {
             D[i] = (1.0 / D[i]).sqrt();
         }
 
-        let mut A: Vec<_> = matrix::Dense::from(conductance).into();
+        let mut A: Vec<_> = Dense::from(conductance).into();
         for i in 0..nodes {
             for j in 0..nodes {
                 A[j * nodes + i] = -D[i] * D[j] * A[j * nodes + i];
@@ -57,7 +56,7 @@ impl Analysis {
             }
         }
 
-        let mut F: Vec<_> = matrix::Dense::from(distribution).into();
+        let mut F: Vec<_> = Dense::from(distribution).into();
         linear::multiply(1.0, &T1, &F, 0.0, &mut T2[..(nodes * cores)], nodes);
         linear::multiply(1.0, &U, &T2[..(nodes * cores)], 0.0, &mut F, nodes);
 
@@ -75,8 +74,7 @@ impl Analysis {
             config: *config,
             system: System {
                 cores: cores, nodes: nodes,
-                D: D, E: E, F: F,
-                S: vec![0.0; 2 * nodes],
+                D: D, E: E, F: F, S: vec![0.0; 2 * nodes],
             },
         })
     }
