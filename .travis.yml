@@ -7,11 +7,11 @@ addons:
       - gfortran
 
 script:
-  - cargo build --verbose --features=hotspot
-  - cargo test --verbose --features=hotspot
+  - cargo build --verbose --features "hotspot threed-ice"
+  - cargo test --verbose --features "hotspot threed-ice"
 
 after_success:
-  - curl https://markov-chain.github.io/travis/after_success.sh | CARGO_FLAGS=--features=hotspot bash
+  - curl https://markov-chain.github.io/travis/after_success.sh | CARGO_FLAGS='--features "hotspot threed-ice"' bash
 
 env:
   global:
