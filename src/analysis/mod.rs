@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 use linear;
-use matrix::{Conventional, Size};
+use matrix::{Compressed, Conventional, Size};
 use std::{mem, ptr};
 
 use {Circuit, Config, Result};
@@ -19,7 +19,7 @@ struct System {
     cores: usize,
     nodes: usize,
     spots: usize,
-    C: Vec<f64>,
+    C: Compressed<f64>,
     E: Vec<f64>,
     F: Vec<f64>,
     S: Vec<f64>,
@@ -79,7 +79,6 @@ impl Analysis {
         for (_, j, value) in C.iter_mut() {
             *value *= D[j];
         }
-        let C: Vec<_> = Conventional::from(C).into();
 
         Ok(Analysis {
             config: *config,
@@ -125,9 +124,28 @@ impl Analysis {
             linear::multiply(1.0, E, from, 1.0, into, nodes);
         }
 
-        linear::multiply(1.0, C, &S[nodes..], 0.0, Q, cores);
         for value in Q.iter_mut() {
-            *value += ambience;
+            *value = ambience;
+        }
+        multiply_matrix_matrix(C, &S[nodes..], Q);
+    }
+}
+
+fn multiply_matrix_matrix(A: &Compressed<f64>, B: &[f64], C: &mut [f64]) {
+    let (rows, columns) = (A.rows, A.columns);
+    let (mut i, mut j) = (0, 0);
+    for _ in 0..(B.len() / columns) {
+        multiply_matrix_vector(A, &B[i..(i + columns)], &mut C[j..(j + rows)]);
+        i += columns;
+        j += rows;
+    }
+}
+
+fn multiply_matrix_vector(A: &Compressed<f64>, B: &[f64], C: &mut [f64]) {
+    let &Compressed { columns, ref values, ref indices, ref offsets, .. } = A;
+    for j in 0..columns {
+        for k in offsets[j]..offsets[j + 1] {
+            C[indices[k]] += values[k] * B[j];
         }
     }
 }
