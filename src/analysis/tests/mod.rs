@@ -16,12 +16,12 @@ fn multiply_matrix_matrix() {
         4.0, 5.0, 6.0,
     ];
 
-    let mut C = vec![0.0; 4 * 2];
+    let mut C = vec![1.0; 4 * 2];
 
     super::multiply_matrix_matrix(&A, &B, &mut C);
 
     assert_eq!(C, vec![
-        23.0, 23.0, 21.0, 17.0,
-        53.0, 56.0, 54.0, 47.0,
+        24.0, 24.0, 22.0, 18.0,
+        54.0, 57.0, 55.0, 48.0,
     ]);
 }
