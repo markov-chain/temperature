@@ -38,10 +38,10 @@
 //!   processing elements onto the thermal nodes, which is a `nodes × cores`
 //!   matrix;
 //!
-//! * `Q` is the temperature of interest, which is an `outputs`-element vector;
+//! * `Q` is the temperature of interest, which is an `spots`-element vector;
 //!
 //! * `Mq` is the aggregation matrix mapping the temperature of the thermal
-//!   nodes onto the temperature of interest, which is an `outputs × nodes`
+//!   nodes onto the temperature of interest, which is an `spots × nodes`
 //!   matrix.
 //!
 //! ## Solution
@@ -97,7 +97,7 @@ extern crate assert;
 extern crate linear;
 extern crate matrix;
 
-use std::{error, fmt};
+use std::{default, error, fmt, result};
 
 /// A thermal circuit.
 pub struct Circuit {
@@ -107,6 +107,8 @@ pub struct Circuit {
     pub conductance: matrix::Compressed<f64>,
     /// The power distribution matrix.
     pub distribution: matrix::Compressed<f64>,
+    /// The temperature aggregation matrix.
+    pub aggregation: matrix::Compressed<f64>,
 }
 
 /// A configuration of temperature analysis.
@@ -119,11 +121,11 @@ pub struct Config {
 }
 
 /// An error.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Error(String);
 
 /// A result.
-pub type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = result::Result<T, Error>;
 
 macro_rules! ok(
     ($result:expr) => (
@@ -146,7 +148,7 @@ impl error::Error for Error {
     }
 }
 
-impl std::default::Default for Config {
+impl default::Default for Config {
     #[inline]
     fn default() -> Config {
         Config {

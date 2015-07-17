@@ -18,6 +18,7 @@ impl HotSpot {
             capacitance: capacitance,
             conductance: conductance,
             distribution: Compressed::from(Diagonal::from_vec(vec![1.0; cores], (nodes, cores))),
+            aggregation: Compressed::from(Diagonal::from_vec(vec![1.0; cores], (cores, nodes))),
         })
     }
 }

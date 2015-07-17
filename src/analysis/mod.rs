@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 use linear;
-use matrix::{Dense, Size};
+use matrix::{Conventional, Size};
 use std::{mem, ptr};
 
 use {Circuit, Config, Result};
@@ -18,7 +18,8 @@ pub struct Analysis {
 struct System {
     cores: usize,
     nodes: usize,
-    D: Vec<f64>,
+    spots: usize,
+    C: Vec<f64>,
     E: Vec<f64>,
     F: Vec<f64>,
     S: Vec<f64>,
@@ -27,15 +28,19 @@ struct System {
 impl Analysis {
     /// Set up the analysis.
     pub fn new(circuit: &Circuit, config: &Config) -> Result<Analysis> {
-        let &Circuit { ref capacitance, ref conductance, ref distribution, .. } = circuit;
-        let (nodes, cores) = distribution.dimensions();
+        let &Circuit {
+            ref capacitance, ref conductance, ref distribution, ref aggregation,
+        } = circuit;
+
+        let ((nodes, cores), spots) = (distribution.dimensions(), aggregation.rows());
+        debug_assert_eq!(aggregation.columns(), nodes);
 
         let mut D: Vec<_> = capacitance.clone().into();
         for i in 0..nodes {
             D[i] = (1.0 / D[i]).sqrt();
         }
 
-        let mut A: Vec<_> = Dense::from(conductance).into();
+        let mut A: Vec<_> = Conventional::from(conductance).into();
         for i in 0..nodes {
             for j in 0..nodes {
                 A[j * nodes + i] = -D[i] * D[j] * A[j * nodes + i];
@@ -56,7 +61,7 @@ impl Analysis {
             }
         }
 
-        let mut F: Vec<_> = Dense::from(distribution).into();
+        let mut F: Vec<_> = Conventional::from(distribution).into();
         linear::multiply(1.0, &T1, &F, 0.0, &mut T2[..(nodes * cores)], nodes);
         linear::multiply(1.0, &U, &T2[..(nodes * cores)], 0.0, &mut F, nodes);
 
@@ -70,11 +75,17 @@ impl Analysis {
         let mut E = T2;
         linear::multiply(1.0, &U, &T1, 0.0, &mut E, nodes);
 
+        let mut C = aggregation.clone();
+        for (_, j, value) in C.iter_mut() {
+            *value *= D[j];
+        }
+        let C: Vec<_> = Conventional::from(C).into();
+
         Ok(Analysis {
             config: *config,
             system: System {
-                cores: cores, nodes: nodes,
-                D: D, E: E, F: F, S: vec![0.0; 2 * nodes],
+                cores: cores, nodes: nodes, spots: spots,
+                C: C, E: E, F: F, S: vec![0.0; 2 * nodes],
             },
         })
     }
@@ -82,12 +93,13 @@ impl Analysis {
     /// Perform the analysis.
     pub fn step(&mut self, P: &[f64], Q: &mut [f64]) {
         let Config { ambience, .. } = self.config;
-        let System { cores, nodes, ref D, ref E, ref F, ref mut S, .. } = self.system;
+        let System { cores, nodes, spots, ref C, ref E, ref F, ref mut S } = self.system;
 
-        debug_assert!(P.len() % cores == 0);
-        debug_assert!(Q.len() % cores == 0);
+        debug_assert_eq!(P.len() % cores, 0);
+        debug_assert_eq!(Q.len() % spots, 0);
 
         let steps = P.len() / cores;
+        debug_assert_eq!(steps, Q.len() / spots);
         debug_assert!(steps > 0);
 
         unsafe {
@@ -113,10 +125,9 @@ impl Analysis {
             linear::multiply(1.0, E, from, 1.0, into, nodes);
         }
 
-        for i in 0..cores {
-            for j in 0..steps {
-                Q[j * cores + i] = D[i] * S[(j + 1) * nodes + i] + ambience;
-            }
+        linear::multiply(1.0, C, &S[nodes..], 0.0, Q, cores);
+        for value in Q.iter_mut() {
+            *value += ambience;
         }
     }
 }
