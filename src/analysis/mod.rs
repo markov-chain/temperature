@@ -3,6 +3,7 @@
 use matrix::format::{Compressed, Conventional, Diagonal};
 use matrix::operation::{Multiply, MultiplyInto, SymmetricEigen};
 use matrix::{Matrix, Size};
+use std::ops::{Deref, DerefMut};
 use std::{mem, ptr};
 
 use {Circuit, Config, Result};
@@ -23,8 +24,10 @@ struct System {
     C: Compressed<f64>,
     E: Conventional<f64>,
     F: Conventional<f64>,
-    S: Vec<f64>,
+    S: State,
 }
+
+struct State(Vec<f64>);
 
 impl Analysis {
     /// Set up the analysis.
@@ -80,7 +83,7 @@ impl Analysis {
             config: *config,
             system: System {
                 cores: cores, nodes: nodes, spots: spots,
-                C: C, E: E, F: F, S: vec![0.0; nodes * 2],
+                C: C, E: E, F: F, S: State::new(nodes),
             },
         })
     }
@@ -97,22 +100,7 @@ impl Analysis {
         debug_assert_eq!(steps, Q.len() / spots);
         debug_assert!(steps > 0);
 
-        unsafe {
-            let current = S.len();
-            let required = (steps + 1) * nodes;
-            debug_assert!(current >= nodes && current % nodes == 0);
-
-            if S.capacity() < required {
-                let mut T = vec![0.0; nodes * (steps + 1)];
-                ptr::copy_nonoverlapping(&S[current - nodes], T.as_mut_ptr(), nodes);
-                mem::replace(S, T);
-            } else {
-                ptr::copy_nonoverlapping(&S[current - nodes], S.as_mut_ptr(), nodes);
-                ptr::write_bytes(&mut S[nodes], 0, required - nodes);
-                S.set_len(required);
-            }
-        }
-
+        S.next(nodes, steps);
         F.multiply_into(P, &mut S[nodes..]);
 
         for i in 0..steps {
@@ -124,5 +112,46 @@ impl Analysis {
             *value = ambience;
         }
         C.multiply_into(&S[nodes..], Q);
+    }
+}
+
+impl State {
+    fn new(nodes: usize) -> State {
+        State(vec![0.0; 2 * nodes])
+    }
+
+    fn next(&mut self, nodes: usize, steps: usize) {
+        let buffer = &mut self.0;
+        let current = buffer.len();
+        let required = (steps + 1) * nodes;
+        debug_assert!(current >= nodes && current % nodes == 0);
+
+        unsafe {
+            if buffer.capacity() < required {
+                let mut new = vec![0.0; nodes * (steps + 1)];
+                ptr::copy_nonoverlapping(&buffer[current - nodes], new.as_mut_ptr(), nodes);
+                mem::replace(buffer, new);
+            } else {
+                ptr::copy_nonoverlapping(&buffer[current - nodes], buffer.as_mut_ptr(), nodes);
+                ptr::write_bytes(&mut buffer[nodes], 0, required - nodes);
+                buffer.set_len(required);
+            }
+        }
+    }
+}
+
+impl Deref for State {
+    type Target = [f64];
+
+    #[inline(always)]
+    fn deref(&self) -> &[f64] {
+        &self.0
+    }
+}
+
+impl DerefMut for State {
+    #[inline(always)]
+    fn deref_mut(&mut self) -> &mut [f64] {
+        &mut self.0
     }
 }
