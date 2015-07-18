@@ -62,7 +62,7 @@ impl Analysis {
 
         let mut F = Conventional::from(distribution);
         T1.multiply_into(&F, &mut T2.values[..(nodes * cores)]);
-        unsafe { ptr::write_bytes(F.as_mut_ptr(), 0, nodes * cores) };
+        unsafe { F.erase() };
         U.multiply_into(&T2.values[..(nodes * cores)], &mut F);
 
         for i in 0..nodes {
@@ -73,7 +73,7 @@ impl Analysis {
         }
 
         let mut E = T2;
-        unsafe { ptr::write_bytes(E.as_mut_ptr(), 0, nodes * nodes) };
+        unsafe { E.erase() };
         U.multiply_into(&T1, &mut E);
 
         let mut C = aggregation.clone();
