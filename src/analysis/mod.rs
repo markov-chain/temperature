@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 use matrix::format::{Compressed, Conventional, Diagonal};
-use matrix::operation::{MultiplyInto, MultiplySelf, SymmetricEigen};
+use matrix::operation::{Multiply, MultiplyInto, SymmetricEigen};
 use matrix::{Matrix, Size};
 use std::{mem, ptr};
 
@@ -60,10 +60,8 @@ impl Analysis {
             }
         }
 
-        let mut F = Conventional::from(distribution);
-        T1.multiply_into(&F, &mut T2.values[..(nodes * cores)]);
-        unsafe { F.erase() };
-        U.multiply_into(&T2.values[..(nodes * cores)], &mut F);
+        T1.multiply_into(distribution, &mut T2.values[..(nodes * cores)]);
+        let F = U.multiply(&T2.values[..(nodes * cores)]);
 
         for i in 0..nodes {
             let factor = (config.time_step * L[i]).exp();
@@ -76,8 +74,7 @@ impl Analysis {
         unsafe { E.erase() };
         U.multiply_into(&T1, &mut E);
 
-        let mut C = aggregation.clone();
-        C.multiply_self(&D);
+        let C = aggregation.multiply(&D);
 
         Ok(Analysis {
             config: *config,
