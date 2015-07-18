@@ -1,7 +1,8 @@
 #![allow(non_snake_case)]
 
 use linear;
-use matrix::{Compressed, Conventional, Size};
+use matrix::Size;
+use matrix::format::{Compressed, Conventional};
 use std::{mem, ptr};
 
 use {Circuit, Config, Result};

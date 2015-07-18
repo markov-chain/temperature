@@ -1,6 +1,6 @@
 extern crate hotspot;
 
-use matrix::{Compressed, Diagonal};
+use matrix::format::{Compressed, Diagonal};
 use std::path::Path;
 
 use {Circuit, Result};
@@ -17,8 +17,8 @@ impl HotSpot {
         Ok(Circuit {
             capacitance: capacitance,
             conductance: conductance,
-            distribution: Compressed::from(Diagonal::from_vec(vec![1.0; cores], (nodes, cores))),
-            aggregation: Compressed::from(Diagonal::from_vec(vec![1.0; cores], (cores, nodes))),
+            distribution: Compressed::from(Diagonal::from_vec((nodes, cores), vec![1.0; cores])),
+            aggregation: Compressed::from(Diagonal::from_vec((cores, nodes), vec![1.0; cores])),
         })
     }
 }

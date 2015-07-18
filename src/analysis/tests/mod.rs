@@ -1,15 +1,15 @@
-use matrix::{Compressed, Conventional};
+use matrix::format::{Compressed, Conventional};
 
 #[cfg(feature = "hotspot")]
 mod hotspot;
 
 #[test]
 fn multiply_matrix_matrix() {
-    let A = Compressed::from(Conventional::from_vec(vec![
+    let A = Compressed::from(Conventional::from_vec((4, 3), vec![
         1.0, 2.0, 3.0, 4.0,
         5.0, 6.0, 6.0, 5.0,
         4.0, 3.0, 2.0, 1.0,
-    ], (4, 3)));
+    ]));
 
     let B = vec![
         1.0, 2.0, 3.0,

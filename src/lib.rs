@@ -98,17 +98,18 @@ extern crate linear;
 extern crate matrix;
 
 use std::{default, error, fmt, result};
+use matrix::format::{Compressed, Diagonal};
 
 /// A thermal circuit.
 pub struct Circuit {
     /// The thermal capacitance matrix.
-    pub capacitance: matrix::Diagonal<f64>,
+    pub capacitance: Diagonal<f64>,
     /// The thermal conductance matrix.
-    pub conductance: matrix::Compressed<f64>,
+    pub conductance: Compressed<f64>,
     /// The power distribution matrix.
-    pub distribution: matrix::Compressed<f64>,
+    pub distribution: Compressed<f64>,
     /// The temperature aggregation matrix.
-    pub aggregation: matrix::Compressed<f64>,
+    pub aggregation: Compressed<f64>,
 }
 
 /// A configuration of temperature analysis.
