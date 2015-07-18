@@ -1,8 +1,8 @@
 #![allow(non_snake_case)]
 
-use linear;
-use matrix::Size;
-use matrix::format::{Compressed, Conventional};
+use matrix::format::{Compressed, Conventional, Diagonal};
+use matrix::operation::{MultiplyInto, MultiplySelf, SymmetricEigen};
+use matrix::{Matrix, Size};
 use std::{mem, ptr};
 
 use {Circuit, Config, Result};
@@ -21,8 +21,8 @@ struct System {
     nodes: usize,
     spots: usize,
     C: Compressed<f64>,
-    E: Vec<f64>,
-    F: Vec<f64>,
+    E: Conventional<f64>,
+    F: Conventional<f64>,
     S: Vec<f64>,
 }
 
@@ -36,56 +36,54 @@ impl Analysis {
         let ((nodes, cores), spots) = (distribution.dimensions(), aggregation.rows());
         debug_assert_eq!(aggregation.columns(), nodes);
 
-        let mut D: Vec<_> = capacitance.clone().into();
-        for i in 0..nodes {
-            D[i] = (1.0 / D[i]).sqrt();
+        let mut D = capacitance.clone();
+        for value in D.iter_mut() {
+            *value = (1.0 / *value).sqrt();
         }
 
-        let mut A: Vec<_> = Conventional::from(conductance).into();
-        for i in 0..nodes {
-            for j in 0..nodes {
-                A[j * nodes + i] = -D[i] * D[j] * A[j * nodes + i];
-            }
+        let mut A = conductance.clone();
+        for (i, j, value) in A.iter_mut() {
+            *value *= -D[i] * D[j];
         }
 
-        let mut U = A;
-        let mut L = vec![0.0; nodes];
-        ok!(linear::symmetric_eigen(&mut U, &mut L));
+        let mut U = Conventional::from(A);
+        let mut L = Diagonal::zero(nodes);
+        ok!(SymmetricEigen::decompose(&mut (&mut *U, &mut *L)));
 
-        let mut T1 = vec![0.0; nodes * nodes];
-        let mut T2 = vec![0.0; nodes * nodes];
+        let mut T1 = Conventional::zero(nodes);
+        let mut T2 = Conventional::zero(nodes);
 
         for i in 0..nodes {
             let factor = ((config.time_step * L[i]).exp() - 1.0) / L[i];
             for j in 0..nodes {
-                T1[j * nodes + i] = factor * U[i * nodes + j] * D[j];
+                T1[(i, j)] = factor * U[(j, i)] * D[j];
             }
         }
 
-        let mut F: Vec<_> = Conventional::from(distribution).into();
-        linear::multiply(1.0, &T1, &F, 0.0, &mut T2[..(nodes * cores)], nodes);
-        linear::multiply(1.0, &U, &T2[..(nodes * cores)], 0.0, &mut F, nodes);
+        let mut F = Conventional::from(distribution);
+        T1.multiply_into(&F, &mut T2.values[..(nodes * cores)]);
+        unsafe { ptr::write_bytes(F.as_mut_ptr(), 0, nodes * cores) };
+        U.multiply_into(&T2.values[..(nodes * cores)], &mut F);
 
         for i in 0..nodes {
             let factor = (config.time_step * L[i]).exp();
             for j in 0..nodes {
-                T1[j * nodes + i] = factor * U[i * nodes + j];
+                T1[(i, j)] = factor * U[(j, i)];
             }
         }
 
         let mut E = T2;
-        linear::multiply(1.0, &U, &T1, 0.0, &mut E, nodes);
+        unsafe { ptr::write_bytes(E.as_mut_ptr(), 0, nodes * nodes) };
+        U.multiply_into(&T1, &mut E);
 
         let mut C = aggregation.clone();
-        for (_, j, value) in C.iter_mut() {
-            *value *= D[j];
-        }
+        C.multiply_self(&D);
 
         Ok(Analysis {
             config: *config,
             system: System {
                 cores: cores, nodes: nodes, spots: spots,
-                C: C, E: E, F: F, S: vec![0.0; 2 * nodes],
+                C: C, E: E, F: F, S: vec![0.0; nodes * 2],
             },
         })
     }
@@ -108,7 +106,7 @@ impl Analysis {
             debug_assert!(current >= nodes && current % nodes == 0);
 
             if S.capacity() < required {
-                let mut T = vec![0.0; required];
+                let mut T = vec![0.0; nodes * (steps + 1)];
                 ptr::copy_nonoverlapping(&S[current - nodes], T.as_mut_ptr(), nodes);
                 mem::replace(S, T);
             } else {
@@ -118,35 +116,16 @@ impl Analysis {
             }
         }
 
-        linear::multiply(1.0, F, P, 1.0, &mut S[nodes..], nodes);
+        F.multiply_into(P, &mut S[nodes..]);
 
         for i in 0..steps {
             let (from, into) = S[(i * nodes)..((i + 2) * nodes)].split_at_mut(nodes);
-            linear::multiply(1.0, E, from, 1.0, into, nodes);
+            E.multiply_into(from, into);
         }
 
         for value in Q.iter_mut() {
             *value = ambience;
         }
-        multiply_matrix_matrix(C, &S[nodes..], Q);
-    }
-}
-
-fn multiply_matrix_matrix(A: &Compressed<f64>, B: &[f64], C: &mut [f64]) {
-    let (rows, columns) = (A.rows, A.columns);
-    let (mut i, mut j) = (0, 0);
-    for _ in 0..(B.len() / columns) {
-        multiply_matrix_vector(A, &B[i..(i + columns)], &mut C[j..(j + rows)]);
-        i += columns;
-        j += rows;
-    }
-}
-
-fn multiply_matrix_vector(A: &Compressed<f64>, B: &[f64], C: &mut [f64]) {
-    let &Compressed { columns, ref values, ref indices, ref offsets, .. } = A;
-    for j in 0..columns {
-        for k in offsets[j]..offsets[j + 1] {
-            C[indices[k]] += values[k] * B[j];
-        }
+        C.multiply_into(&S[nodes..], Q);
     }
 }

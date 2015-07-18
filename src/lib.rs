@@ -94,7 +94,6 @@
 
 #[cfg(test)]
 extern crate assert;
-extern crate linear;
 extern crate matrix;
 
 use std::{default, error, fmt, result};

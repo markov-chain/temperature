@@ -1,6 +1,6 @@
 extern crate threed_ice;
 
-use matrix::Matrix;
+use matrix::operation::Transpose;
 use std::path::Path;
 
 use {Circuit, Result};
