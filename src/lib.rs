@@ -35,13 +35,13 @@
 //!   `cores`-element vector;
 //!
 //! * `Mp` is the distribution matrix mapping the power dissipation of the
-//!   processing elements onto the thermal nodes, which is a `nodes × cores`
+//!   processing elements onto the thermal nodes, and it is a `nodes × cores`
 //!   matrix;
 //!
-//! * `Q` is the temperature of interest, which is an `spots`-element vector;
+//! * `Q` is the temperature of interest, which is a `spots`-element vector;
 //!
 //! * `Mq` is the aggregation matrix mapping the temperature of the thermal
-//!   nodes onto the temperature of interest, which is an `spots × nodes`
+//!   nodes onto the temperature of interest, and it is a `spots × nodes`
 //!   matrix.
 //!
 //! ## Solution
