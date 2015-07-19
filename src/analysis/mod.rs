@@ -93,12 +93,9 @@ impl Analysis {
         let Config { ambience, .. } = self.config;
         let System { cores, nodes, spots, ref C, ref E, ref F, ref mut S } = self.system;
 
-        debug_assert_eq!(P.len() % cores, 0);
-        debug_assert_eq!(Q.len() % spots, 0);
-
         let steps = P.len() / cores;
-        debug_assert_eq!(steps, Q.len() / spots);
-        debug_assert!(steps > 0);
+        debug_assert_eq!(P.len(), cores * steps);
+        debug_assert_eq!(Q.len(), spots * steps);
 
         S.next(nodes, steps);
         F.multiply_into(P, &mut S[nodes..]);
