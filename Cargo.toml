@@ -6,9 +6,7 @@ license = "MIT"
 repository = "https://github.com/markov-chain/temperature"
 homepage = "https://github.com/markov-chain/temperature"
 documentation = "https://markov-chain.github.io/temperature"
-description = """
-The package provides an exponential-integrator-based solver for systems of
-differential-algebraic equations modeling temperature of electronic systems."""
+description = "The package provides a temperature simulator."
 
 [features]
 default = ["hotspot", "threed-ice"]

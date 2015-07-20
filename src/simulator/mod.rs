@@ -11,8 +11,8 @@ use {Circuit, Config, Result};
 #[cfg(test)]
 mod tests;
 
-/// Temperature analysis.
-pub struct Analysis {
+/// A temperature simulator.
+pub struct Simulator {
     config: Config,
     system: System,
 }
@@ -29,9 +29,9 @@ struct System {
 
 struct State(Vec<f64>);
 
-impl Analysis {
-    /// Set up the analysis.
-    pub fn new(circuit: &Circuit, config: &Config) -> Result<Analysis> {
+impl Simulator {
+    /// Create a simulator.
+    pub fn new(circuit: &Circuit, config: &Config) -> Result<Simulator> {
         let &Circuit {
             ref capacitance, ref conductance, ref distribution, ref aggregation,
         } = circuit;
@@ -79,7 +79,7 @@ impl Analysis {
 
         let C = aggregation.multiply(&D);
 
-        Ok(Analysis {
+        Ok(Simulator {
             config: *config,
             system: System {
                 cores: cores, nodes: nodes, spots: spots,
@@ -88,7 +88,7 @@ impl Analysis {
         })
     }
 
-    /// Perform the analysis.
+    /// Perform the simulation.
     pub fn step(&mut self, P: &[f64], Q: &mut [f64]) {
         let Config { ambience, .. } = self.config;
         let System { cores, nodes, spots, ref C, ref E, ref F, ref mut S } = self.system;

@@ -1,7 +1,6 @@
 # Temperature [![Version][version-img]][version-url] [![Status][status-img]][status-url]
 
-The package provides an exponential-integrator-based solver for systems of
-differential-algebraic equations modeling temperature of electronic systems.
+The package provides a temperature simulator.
 
 ## [Documentation][docs]
 

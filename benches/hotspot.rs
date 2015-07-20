@@ -6,7 +6,7 @@ use std::fs;
 use std::path::PathBuf;
 use test::Bencher;
 
-use temperature::Analysis;
+use temperature::Simulator;
 use temperature::circuit::HotSpot;
 
 #[bench] fn step_0001(bench: &mut Bencher) { step(   1, bench); }
@@ -17,16 +17,16 @@ use temperature::circuit::HotSpot;
 fn step(steps: usize, bench: &mut Bencher) {
     let cores = 32;
 
-    let mut analysis = setup("032");
+    let mut simulator = setup("032");
     let P = random::default().iter().take(steps * cores).collect::<Vec<_>>();
     let mut Q = vec![0.0; steps * cores];
 
-    bench.iter(|| analysis.step(&P, &mut Q));
+    bench.iter(|| simulator.step(&P, &mut Q));
 }
 
-fn setup(name: &str) -> Analysis {
+fn setup(name: &str) -> Simulator {
     let circuit = HotSpot::new(find(&format!("{}.flp", name)), find("hotspot.config"));
-    Analysis::new(&circuit.unwrap(), &Default::default()).unwrap()
+    Simulator::new(&circuit.unwrap(), &Default::default()).unwrap()
 }
 
 fn find(name: &str) -> PathBuf {
