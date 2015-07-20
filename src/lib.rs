@@ -100,6 +100,7 @@ use std::{default, error, fmt, result};
 use matrix::format::{Compressed, Diagonal};
 
 /// A thermal circuit.
+#[derive(Clone, Debug)]
 pub struct Circuit {
     /// The thermal capacitance matrix.
     pub capacitance: Diagonal<f64>,
