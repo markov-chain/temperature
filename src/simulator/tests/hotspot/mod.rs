@@ -13,7 +13,7 @@ fn new() {
     let simulator = setup("002");
     let system = simulator.system;
 
-    assert_eq!(system.cores, 2);
+    assert_eq!(system.units, 2);
     assert_eq!(system.nodes, 4 * 2 + 12);
     assert_eq!(system.spots, 2);
     assert::close(&system.E.values, &fixture::E[..], 1e-13);

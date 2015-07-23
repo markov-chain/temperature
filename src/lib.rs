@@ -3,7 +3,7 @@
 //! ## Model
 //!
 //! Temperature simulation is based on the well-known analogy between electrical
-//! and thermal circuits. Given a system with `cores` processing elements, an
+//! and thermal circuits. Given a system with `units` processing elements, an
 //! equivalent thermal RC circuit with `nodes` thermal nodes is constructed. The
 //! circuit is then used for modeling the thermal behavior of the system.
 //! Concretely, the thermal behavior is described using the following system of
@@ -28,10 +28,10 @@
 //!
 //! * `Tamb` is a `nodes`-element vector of the ambient temperature;
 //!
-//! * `P` is a `cores`-element vector of the power dissipation of the processing
+//! * `P` is a `units`-element vector of the power dissipation of the processing
 //!   elements;
 //!
-//! * `Mp` is a `nodes × cores` matrix that distributes the power dissipation of
+//! * `Mp` is a `nodes × units` matrix that distributes the power dissipation of
 //!   the processing elements onto the thermal nodes;
 //!
 //! * `Q` is a `spots`-element vector of the temperature of interest; and

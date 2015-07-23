@@ -15,11 +15,11 @@ use temperature::circuit::HotSpot;
 #[bench] fn step_1000(bench: &mut Bencher) { step(1000, bench); }
 
 fn step(steps: usize, bench: &mut Bencher) {
-    let cores = 32;
+    let units = 32;
 
     let mut simulator = setup("032");
-    let P = random::default().iter().take(steps * cores).collect::<Vec<_>>();
-    let mut Q = vec![0.0; steps * cores];
+    let P = random::default().iter().take(steps * units).collect::<Vec<_>>();
+    let mut Q = vec![0.0; steps * units];
 
     bench.iter(|| simulator.step(&P, &mut Q));
 }

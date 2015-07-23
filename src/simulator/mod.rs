@@ -18,7 +18,7 @@ pub struct Simulator {
 }
 
 struct System {
-    cores: usize,
+    units: usize,
     nodes: usize,
     spots: usize,
     C: Compressed<f64>,
@@ -36,7 +36,7 @@ impl Simulator {
             ref capacitance, ref conductance, ref distribution, ref aggregation,
         } = circuit;
 
-        let ((nodes, cores), spots) = (distribution.dimensions(), aggregation.rows());
+        let ((nodes, units), spots) = (distribution.dimensions(), aggregation.rows());
         debug_assert_eq!(aggregation.columns(), nodes);
 
         let mut D = capacitance.clone();
@@ -63,8 +63,8 @@ impl Simulator {
             }
         }
 
-        T1.multiply_into(distribution, &mut T2.values[..(nodes * cores)]);
-        let F = U.multiply(&T2.values[..(nodes * cores)]);
+        T1.multiply_into(distribution, &mut T2.values[..(nodes * units)]);
+        let F = U.multiply(&T2.values[..(nodes * units)]);
 
         for i in 0..nodes {
             let factor = (config.time_step * L[i]).exp();
@@ -82,7 +82,7 @@ impl Simulator {
         Ok(Simulator {
             config: *config,
             system: System {
-                cores: cores, nodes: nodes, spots: spots,
+                units: units, nodes: nodes, spots: spots,
                 C: C, E: E, F: F, S: State::new(nodes),
             },
         })
@@ -91,10 +91,10 @@ impl Simulator {
     /// Perform the simulation.
     pub fn step(&mut self, P: &[f64], Q: &mut [f64]) {
         let Config { ambience, .. } = self.config;
-        let System { cores, nodes, spots, ref C, ref E, ref F, ref mut S } = self.system;
+        let System { units, nodes, spots, ref C, ref E, ref F, ref mut S } = self.system;
 
-        let steps = P.len() / cores;
-        debug_assert_eq!(P.len(), cores * steps);
+        let steps = P.len() / units;
+        debug_assert_eq!(P.len(), units * steps);
         debug_assert_eq!(Q.len(), spots * steps);
 
         S.next(nodes, steps);
