@@ -130,7 +130,7 @@ impl State {
                 mem::replace(buffer, new);
             } else {
                 ptr::copy_nonoverlapping(&buffer[current - nodes], buffer.as_mut_ptr(), nodes);
-                ptr::write_bytes(&mut buffer[nodes], 0, required - nodes);
+                ptr::write_bytes(buffer.as_mut_ptr().offset(nodes as isize), 0, required - nodes);
                 buffer.set_len(required);
             }
         }

@@ -11,6 +11,25 @@ use temperature::circuit::HotSpot;
 mod fixture;
 
 #[test]
+fn step_0() {
+    let units = 2;
+    let mut simulator = setup("002");
+    let mut Q = vec![0.0; units];
+    for i in 0..220 {
+        let range = (i * units)..((i + 1) * units);
+        simulator.step(&fixture::P[range.clone()], &mut Q);
+        assert::close(&Q, &fixture::Q[range], 1e-12);
+    }
+    simulator.step(&[], &mut Q[..0]);
+    simulator.step(&[], &mut Q[..0]);
+    for i in 220..440 {
+        let range = (i * units)..((i + 1) * units);
+        simulator.step(&fixture::P[range.clone()], &mut Q);
+        assert::close(&Q, &fixture::Q[range], 1e-12);
+    }
+}
+
+#[test]
 fn step_1() {
     let units = 2;
     let mut simulator = setup("002");
