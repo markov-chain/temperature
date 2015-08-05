@@ -62,7 +62,7 @@ fn step_440() {
     assert::close(&Q, &fixture::Q[..], 1e-12);
 }
 
-pub fn setup(name: &str) -> Simulator {
+fn setup(name: &str) -> Simulator {
     let circuit = HotSpot::new(find(&format!("{}.flp", name)), find("hotspot.config"));
     Simulator::new(&circuit.unwrap(), &Default::default()).unwrap()
 }
