@@ -7,20 +7,21 @@ use temperature::{Config, Simulator};
 
 mod fixture;
 
+const UNITS: usize = 2;
+
 #[test]
 fn step_0() {
-    let units = 2;
     let mut simulator = setup("002");
-    let mut Q = vec![0.0; units];
+    let mut Q = vec![0.0; UNITS];
     for i in 0..220 {
-        let range = (i * units)..((i + 1) * units);
+        let range = (i * UNITS)..((i + 1) * UNITS);
         simulator.step(&fixture::P[range.clone()], &mut Q);
         assert::close(&Q, &fixture::Q[range], 1e-12);
     }
     simulator.step(&[], &mut Q[..0]);
     simulator.step(&[], &mut Q[..0]);
     for i in 220..440 {
-        let range = (i * units)..((i + 1) * units);
+        let range = (i * UNITS)..((i + 1) * UNITS);
         simulator.step(&fixture::P[range.clone()], &mut Q);
         assert::close(&Q, &fixture::Q[range], 1e-12);
     }
@@ -28,11 +29,10 @@ fn step_0() {
 
 #[test]
 fn step_1() {
-    let units = 2;
     let mut simulator = setup("002");
-    let mut Q = vec![0.0; units];
+    let mut Q = vec![0.0; UNITS];
     for i in 0..440 {
-        let range = (i * units)..((i + 1) * units);
+        let range = (i * UNITS)..((i + 1) * UNITS);
         simulator.step(&fixture::P[range.clone()], &mut Q);
         assert::close(&Q, &fixture::Q[range], 1e-12);
     }
@@ -40,11 +40,10 @@ fn step_1() {
 
 #[test]
 fn step_2() {
-    let units = 2;
     let mut simulator = setup("002");
-    let mut Q = vec![0.0; 2 * units];
+    let mut Q = vec![0.0; 2 * UNITS];
     for i in 0..220 {
-        let range = (2 * i * units)..(2 * (i + 1) * units);
+        let range = (2 * i * UNITS)..(2 * (i + 1) * UNITS);
         simulator.step(&fixture::P[range.clone()], &mut Q);
         assert::close(&Q, &fixture::Q[range], 1e-12);
     }
@@ -52,9 +51,8 @@ fn step_2() {
 
 #[test]
 fn step_440() {
-    let units = 2;
     let mut simulator = setup("002");
-    let mut Q = vec![0.0; 440 * units];
+    let mut Q = vec![0.0; 440 * UNITS];
     simulator.step(&fixture::P, &mut Q);
     assert::close(&Q, &fixture::Q[..], 1e-12);
 }

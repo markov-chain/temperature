@@ -8,19 +8,35 @@ use temperature::{Config, Simulator};
 
 mod fixture;
 
-#[test]
-fn step_20() {
-    let units = 4;
+const UNITS: usize = 4;
 
+#[test]
+fn ambience() {
+    let mut simulator = setup("004.stk");
+    let mut Q = vec![0.0; 42 * UNITS];
+    simulator.step(&vec![0.0; 42 * UNITS], &mut Q);
+    assert::close(&Q, &vec![318.15; 42 * UNITS], 0.0);
+}
+
+#[test]
+fn distribution() {
     let circuit = ThreeDICE::new(find("004.stk")).unwrap();
     let distribution = Conventional::from(&circuit.distribution);
-    let identity = Conventional::from(Diagonal::from_vec((16, 4), vec![1.0; units]));
+    let identity = Conventional::from(Diagonal::from_vec((4 * UNITS, UNITS), vec![1.0; UNITS]));
     assert::close(&*distribution, &*identity, 1e-15);
+}
 
-    let mut simulator = Simulator::new(&circuit, &Config::default()).unwrap();
-    let mut Q = vec![0.0; 20 * units];
+#[test]
+fn step_20() {
+    let mut simulator = setup("004.stk");
+    let mut Q = vec![0.0; 20 * UNITS];
     simulator.step(&fixture::P, &mut Q);
     assert::close(&Q, &fixture::Q[..], 1e-12);
+}
+
+fn setup(name: &str) -> Simulator {
+    let circuit = ThreeDICE::new(find(name)).unwrap();
+    Simulator::new(&circuit, &Config::default()).unwrap()
 }
 
 fn find(name: &str) -> PathBuf {
