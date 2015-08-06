@@ -1,7 +1,8 @@
 #![allow(non_snake_case)]
 
+use matrix::decomposition::SymmetricEigen;
 use matrix::format::{Compressed, Conventional, Diagonal};
-use matrix::operation::{Multiply, MultiplyInto, SymmetricEigen};
+use matrix::operation::{Multiply, MultiplyInto};
 use matrix::{Matrix, Size};
 use std::ops::{Deref, DerefMut};
 use std::{mem, ptr};
