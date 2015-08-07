@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 use matrix::decomposition::SymmetricEigen;
-use matrix::format::{Compressed, Conventional, Diagonal};
+use matrix::format::{Compressed, Conventional};
 use matrix::operation::{Multiply, MultiplyInto};
 use matrix::{Matrix, Size};
 use std::ops::{Deref, DerefMut};
@@ -50,11 +50,10 @@ impl Simulator {
             *value *= -D[i] * D[j];
         }
 
-        let mut U = Conventional::from(A);
-        let mut L = Diagonal::zero(nodes);
-        ok!(SymmetricEigen::decompose(&mut (&mut *U, &mut *L)));
+        let A = Conventional::from(A);
+        let (U, L) = ok!(SymmetricEigen::decompose(&A));
 
-        let mut T1 = Conventional::zero(nodes);
+        let mut T1 = A;
         let mut T2 = Conventional::zero(nodes);
 
         for i in 0..nodes {
