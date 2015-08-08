@@ -124,11 +124,17 @@ pub struct Error(String);
 /// A result.
 pub type Result<T> = result::Result<T, Error>;
 
+macro_rules! raise(
+    ($message:expr) => (
+        return Err(::Error($message.to_string()));
+    );
+);
+
 macro_rules! ok(
     ($result:expr) => (
         match $result {
             Ok(result) => result,
-            Err(error) => return Err(::Error(error.to_string())),
+            Err(error) => raise!(error),
         }
     );
 );

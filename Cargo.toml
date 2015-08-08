@@ -19,7 +19,7 @@ version = "0.5"
 optional = true
 
 [dependencies.threed-ice]
-version = "0.9"
+version = "0.10"
 optional = true
 
 [dev-dependencies]
