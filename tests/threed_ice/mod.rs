@@ -50,7 +50,7 @@ fn conductance() {
     Q.truncate(units);
     assert::close(&Q, &vec![
         3.556272578548002e+02, 3.856526078345531e+02, 4.156779578143060e+02, 4.457033077940591e+02,
-    ], 0.1);
+    ], 1e-11);
 }
 
 #[test]
@@ -62,11 +62,11 @@ fn distribution() {
 }
 
 #[test]
-fn step_20() {
+fn step() {
     let mut simulator = setup("004.stk");
     let mut Q = vec![0.0; 20 * UNITS];
     simulator.step(&fixture::P, &mut Q);
-    assert::close(&Q, &fixture::Q[..], 1e-12);
+    assert::close(&Q, &fixture::Q[..], 5.0);
 }
 
 fn setup(name: &str) -> Simulator {
