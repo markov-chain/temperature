@@ -29,7 +29,7 @@ dimensions:
    cell length 0.002e6, width 0.002e6;
 
 stack:
-   die DIE1 DIE floorplan "tests/threed_ice/fixtures/004.flp";
+   die DIE1 DIE floorplan "tests/3d-ice/fixtures/004.flp";
 
 solver:
    steady;

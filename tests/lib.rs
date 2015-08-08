@@ -6,4 +6,5 @@ extern crate temperature;
 mod hotspot;
 
 #[cfg(feature = "threed-ice")]
+#[path = "3d-ice/mod.rs"]
 mod threed_ice;

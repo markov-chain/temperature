@@ -7,6 +7,7 @@ mod hotspot;
 pub use self::hotspot::HotSpot;
 
 #[cfg(feature = "threed-ice")]
+#[path = "3d-ice.rs"]
 mod threed_ice;
 
 #[cfg(feature = "threed-ice")]

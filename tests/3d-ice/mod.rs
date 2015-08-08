@@ -75,7 +75,7 @@ fn setup(name: &str) -> Simulator {
 }
 
 fn find(name: &str) -> PathBuf {
-    let path = PathBuf::from("tests/threed_ice/fixtures").join(name);
+    let path = PathBuf::from("tests/3d-ice/fixtures").join(name);
     assert!(::std::fs::metadata(&path).is_ok());
     path
 }
