@@ -1,12 +1,13 @@
 [package]
 name = "temperature"
-version = "0.6.1"
+version = "0.7.0"
 authors = ["Ivan Ukhov <ivan.ukhov@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/markov-chain/temperature"
 homepage = "https://github.com/markov-chain/temperature"
 documentation = "https://markov-chain.github.io/temperature"
 description = "The package provides a temperature simulator."
+keywords = ["simulation", "temperature"]
 
 [features]
 default = ["hotspot", "threed-ice"]
