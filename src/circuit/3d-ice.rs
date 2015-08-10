@@ -1,7 +1,7 @@
 extern crate threed_ice;
 
 use matrix::operation::Transpose;
-use self::threed_ice::{AnalysisType, System};
+use self::threed_ice::{AnalysisType, StackElement, System};
 use std::path::Path;
 
 use {Circuit, Result};
@@ -17,9 +17,11 @@ impl ThreeDICE {
 
     /// Construct a thermal circuit given a system.
     pub fn from(system: &System) -> Result<Circuit> {
+        if system.stack.elements.iter().any(|element| element == &StackElement::Channel) {
+            raise!("microchannels are not supported");
+        }
         if system.analysis.kind() != AnalysisType::Steady {
-            raise!("the analysis type should be set to “steady” to obtain a circuit suitable for \
-                    the computations in this package");
+            raise!("the analysis type should be set to “steady”");
         }
         let distribution = ok!(system.distribution());
         let aggregation = distribution.transpose();
