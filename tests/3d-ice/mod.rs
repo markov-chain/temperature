@@ -14,7 +14,7 @@ const UNITS: usize = 4;
 fn ambience() {
     let mut simulator = setup("004.stk");
     let mut Q = vec![0.0; 42 * UNITS];
-    simulator.step(&vec![0.0; 42 * UNITS], &mut Q);
+    simulator.next(&vec![0.0; 42 * UNITS], &mut Q);
     assert::close(&Q, &vec![318.15; 42 * UNITS], 0.0);
 }
 
@@ -62,10 +62,10 @@ fn distribution() {
 }
 
 #[test]
-fn step() {
+fn next() {
     let mut simulator = setup("004.stk");
     let mut Q = vec![0.0; 20 * UNITS];
-    simulator.step(&fixture::P, &mut Q);
+    simulator.next(&fixture::P, &mut Q);
     assert::close(&Q, &fixture::Q[..], 5.0);
 }
 

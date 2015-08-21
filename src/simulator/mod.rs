@@ -89,7 +89,7 @@ impl Simulator {
     }
 
     /// Perform the simulation.
-    pub fn step(&mut self, P: &[f64], Q: &mut [f64]) {
+    pub fn next(&mut self, P: &[f64], Q: &mut [f64]) {
         let Config { ambience, .. } = self.config;
         let System { units, nodes, spots, ref C, ref E, ref F, ref mut S } = self.system;
 

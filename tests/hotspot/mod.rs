@@ -10,50 +10,50 @@ mod fixture;
 const UNITS: usize = 2;
 
 #[test]
-fn step_0() {
+fn next_0() {
     let mut simulator = setup("002");
     let mut Q = vec![0.0; UNITS];
     for i in 0..220 {
         let range = (i * UNITS)..((i + 1) * UNITS);
-        simulator.step(&fixture::P[range.clone()], &mut Q);
+        simulator.next(&fixture::P[range.clone()], &mut Q);
         assert::close(&Q, &fixture::Q[range], 0.1);
     }
-    simulator.step(&[], &mut Q[..0]);
-    simulator.step(&[], &mut Q[..0]);
+    simulator.next(&[], &mut Q[..0]);
+    simulator.next(&[], &mut Q[..0]);
     for i in 220..440 {
         let range = (i * UNITS)..((i + 1) * UNITS);
-        simulator.step(&fixture::P[range.clone()], &mut Q);
+        simulator.next(&fixture::P[range.clone()], &mut Q);
         assert::close(&Q, &fixture::Q[range], 0.1);
     }
 }
 
 #[test]
-fn step_1() {
+fn next_1() {
     let mut simulator = setup("002");
     let mut Q = vec![0.0; UNITS];
     for i in 0..440 {
         let range = (i * UNITS)..((i + 1) * UNITS);
-        simulator.step(&fixture::P[range.clone()], &mut Q);
+        simulator.next(&fixture::P[range.clone()], &mut Q);
         assert::close(&Q, &fixture::Q[range], 0.1);
     }
 }
 
 #[test]
-fn step_2() {
+fn next_2() {
     let mut simulator = setup("002");
     let mut Q = vec![0.0; 2 * UNITS];
     for i in 0..220 {
         let range = (2 * i * UNITS)..(2 * (i + 1) * UNITS);
-        simulator.step(&fixture::P[range.clone()], &mut Q);
+        simulator.next(&fixture::P[range.clone()], &mut Q);
         assert::close(&Q, &fixture::Q[range], 0.1);
     }
 }
 
 #[test]
-fn step_440() {
+fn next_440() {
     let mut simulator = setup("002");
     let mut Q = vec![0.0; 440 * UNITS];
-    simulator.step(&fixture::P, &mut Q);
+    simulator.next(&fixture::P, &mut Q);
     assert::close(&Q, &fixture::Q[..], 0.1);
 }
 
