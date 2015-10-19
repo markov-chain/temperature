@@ -108,6 +108,11 @@ impl Simulator {
         }
         C.multiply_into(&S[nodes..], Q);
     }
+
+    /// Return the configuration.
+    pub fn config(&self) -> &Config {
+        &self.config
+    }
 }
 
 impl State {
