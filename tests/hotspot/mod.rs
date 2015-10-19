@@ -59,7 +59,7 @@ fn next_440() {
 
 fn setup(name: &str) -> Simulator {
     let circuit = HotSpot::new(find(&format!("{}.flp", name)), find("hotspot.config")).unwrap();
-    Simulator::new(&circuit, &Config::default()).unwrap()
+    Simulator::new(circuit, Config::default()).unwrap()
 }
 
 fn find(name: &str) -> PathBuf {

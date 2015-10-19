@@ -22,7 +22,7 @@ fn new() {
 
 pub fn setup(name: &str) -> Simulator {
     let circuit = HotSpot::new(find(&format!("{}.flp", name)), find("hotspot.config"));
-    Simulator::new(&circuit.unwrap(), &Default::default()).unwrap()
+    Simulator::new(circuit.unwrap(), Default::default()).unwrap()
 }
 
 fn find(name: &str) -> PathBuf {

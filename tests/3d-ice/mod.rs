@@ -71,7 +71,7 @@ fn next() {
 
 fn setup(name: &str) -> Simulator {
     let circuit = ThreeDICE::new(find(name)).unwrap();
-    Simulator::new(&circuit, &Config::default()).unwrap()
+    Simulator::new(circuit, Config::default()).unwrap()
 }
 
 fn find(name: &str) -> PathBuf {

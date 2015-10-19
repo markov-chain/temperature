@@ -32,20 +32,18 @@ struct State(Vec<f64>);
 
 impl Simulator {
     /// Create a simulator.
-    pub fn new(circuit: &Circuit, config: &Config) -> Result<Simulator> {
-        let &Circuit {
-            ref capacitance, ref conductance, ref distribution, ref aggregation,
-        } = circuit;
+    pub fn new(circuit: Circuit, config: Config) -> Result<Simulator> {
+        let Circuit { capacitance, conductance, distribution, aggregation } = circuit;
 
         let ((nodes, units), spots) = (distribution.dimensions(), aggregation.rows());
         debug_assert_eq!(aggregation.columns(), nodes);
 
-        let mut D = capacitance.clone();
+        let mut D = capacitance;
         for value in D.iter_mut() {
             *value = (1.0 / *value).sqrt();
         }
 
-        let mut A = conductance.clone();
+        let mut A = conductance;
         for (i, j, value) in A.iter_mut() {
             *value *= -D[i] * D[j];
         }
@@ -63,7 +61,7 @@ impl Simulator {
             }
         }
 
-        T1.multiply_into(distribution, &mut T2.values[..(nodes * units)]);
+        T1.multiply_into(&distribution, &mut T2.values[..(nodes * units)]);
         let F = U.multiply(&T2.values[..(nodes * units)]);
 
         for i in 0..nodes {
@@ -80,7 +78,7 @@ impl Simulator {
         let C = aggregation.multiply(&D);
 
         Ok(Simulator {
-            config: *config,
+            config: config,
             system: System {
                 units: units, nodes: nodes, spots: spots,
                 C: C, E: E, F: F, S: State::new(nodes),
