@@ -1,12 +1,12 @@
 [package]
 name = "temperature"
-version = "0.9.2"
+version = "0.10.0"
+license = "Apache-2.0/MIT"
 authors = ["Ivan Ukhov <ivan.ukhov@gmail.com>"]
-license = "MIT"
-repository = "https://github.com/markov-chain/temperature"
-homepage = "https://github.com/markov-chain/temperature"
-documentation = "https://markov-chain.github.io/temperature"
 description = "The package provides a temperature simulator."
+documentation = "https://markov-chain.github.io/temperature"
+homepage = "https://github.com/markov-chain/temperature"
+repository = "https://github.com/markov-chain/temperature"
 keywords = ["simulation", "temperature"]
 
 [features]
@@ -16,16 +16,16 @@ default = ["hotspot", "threed-ice"]
 matrix = "0.21"
 
 [dependencies.hotspot]
-version = "0.5"
+version = "0.6"
 optional = true
 
 [dependencies.threed-ice]
-version = "0.11"
+version = "0.12"
 optional = true
 
 [dev-dependencies]
-assert = "0.6"
-random = "0.9"
+assert = "0.7"
+random = "0.10"
 
 [[bench]]
 name = "temperature"

@@ -2,16 +2,16 @@
 
 The package provides a temperature simulator.
 
-## [Documentation][docs]
+## [Documentation][doc]
 
-## Contributing
+## Contribution
 
-1. Fork the project.
-2. Implement your idea.
-3. Open a pull request.
+Your contribution is highly appreciated. Do not hesitate to open an issue or a
+pull request. Note that any contribution submitted for inclusion in the project
+will be licensed according to the terms given in [LICENSE.md](LICENSE.md).
 
-[version-img]: https://img.shields.io/crates/v/temperature.svg
-[version-url]: https://crates.io/crates/temperature
+[doc]: https://markov-chain.github.io/temperature
 [status-img]: https://travis-ci.org/markov-chain/temperature.svg?branch=master
 [status-url]: https://travis-ci.org/markov-chain/temperature
-[docs]: https://markov-chain.github.io/temperature
+[version-img]: https://img.shields.io/crates/v/temperature.svg
+[version-url]: https://crates.io/crates/temperature
