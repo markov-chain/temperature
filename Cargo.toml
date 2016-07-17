@@ -1,6 +1,6 @@
 [package]
 name = "temperature"
-version = "0.10.1"
+version = "0.10.2"
 license = "Apache-2.0/MIT"
 authors = ["Ivan Ukhov <ivan.ukhov@gmail.com>"]
 description = "The package provides a temperature simulator."
@@ -25,7 +25,7 @@ optional = true
 
 [dev-dependencies]
 assert = "0.7"
-random = "0.11"
+random = "0.12"
 
 [[bench]]
 name = "temperature"
