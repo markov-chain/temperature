@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["HotSpot","The HotSpot model."],["ThreeDICE","The 3D-ICE model."]]});
